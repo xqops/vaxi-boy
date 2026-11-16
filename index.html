@@ -1,0 +1,1585 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#1d1b2e">
+<title>Vaxi Boy</title>
+<meta name="description" content="Jogo de exploração em que cada vacina tomada de verdade abre uma nova área do mundo.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Pixelify+Sans:wght@400;500;600;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<style>
+:root {
+  --ink: #1d1b2e;
+  --paper: #fbf3df;
+  --paper-line: #e8dcbf;
+  --cream: #fff8e8;
+  --cover: #24468f;
+  --accent: #ffcf3f;
+  --ok: #2f9e6a;
+  --warn: #e0663a;
+  --ui: #3f8f3c;
+  --f-pix: 'Silkscreen', 'Courier New', monospace;
+  --f-body: 'Pixelify Sans', 'Trebuchet MS', sans-serif;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ink: #1d1b2e; } }
+:root[data-theme="dark"] { --ink: #1d1b2e; }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; color: var(--ink); font-family: var(--f-body); }
+body { background-color: #2a2350; background-image: radial-gradient(#3a3170 2px, transparent 2.6px); background-size: 24px 24px; overscroll-behavior: none; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+button { font: inherit; color: inherit; -webkit-tap-highlight-color: transparent; }
+
+/* ---------- console VAXI BOY ---------- */
+.wrap { position: fixed; inset: 0; display: grid; place-items: center; }
+.stage { position: relative; }
+.console { position: absolute; left: 0; top: 0; transform-origin: 0 0; width: 380px; height: 720px;
+  background: linear-gradient(165deg, #9ff0d6, #6fd6bb 45%, #4fbfa3);
+  border-radius: 22px 22px 84px 22px;
+  box-shadow: inset 5px 5px 0 rgba(255,255,255,.45), inset -7px -9px 0 rgba(0,0,0,.14), 0 24px 48px rgba(10,6,30,.55); }
+.console::before { content: ''; position: absolute; left: 22px; right: 22px; top: 8px; height: 4px; border-radius: 2px; background: rgba(0,0,0,.08); }
+.bezel { position: absolute; left: 14px; top: 20px; right: 14px; height: calc(var(--sh) + 44px); background: #2c2a44; border-radius: 12px 12px 48px 12px; box-shadow: inset 0 3px 0 rgba(255,255,255,.1), inset 0 -4px 0 rgba(0,0,0,.3); }
+.blbl { position: absolute; left: 34px; right: 22px; top: 8px; display: flex; align-items: center; gap: 8px; font: 700 7px/1 var(--f-pix); color: #c9c4ef; letter-spacing: .1em; white-space: nowrap; }
+.blbl::before, .blbl::after { content: ''; flex: 1; height: 6px; background: linear-gradient(#ff7a6b 0 2px, transparent 2px 4px, #ffcf3f 4px); }
+.led { position: absolute; left: 14px; top: 8px; width: 8px; height: 8px; border-radius: 50%; background: #ff5a5a; box-shadow: 0 0 8px #ff5a5a; }
+#game { position: absolute; left: 16px; top: 24px; right: 16px; height: var(--sh); overflow: hidden; border-radius: 4px; background: #1d1b2e; container-type: size; box-shadow: inset 0 0 0 2px rgba(0,0,0,.4); }
+.brand { position: absolute; left: 26px; bottom: 258px; color: #1f4f5c; display: flex; flex-direction: column; gap: 4px; }
+.brand small { font: 700 10px/1 var(--f-pix); letter-spacing: .16em; }
+.brand b { font: 700 30px/1 var(--f-pix); transform: skewX(-10deg); transform-origin: left; letter-spacing: .02em; color: #fff; text-shadow: 3px 3px 0 #1f4f5c; }
+.dpad { position: absolute; left: 30px; bottom: 102px; width: 112px; height: 112px; touch-action: none; cursor: pointer; }
+.dpad i { position: absolute; background: #2c2a44; border-radius: 5px; box-shadow: 0 5px 0 #17152a; }
+.dpad .h { left: 0; top: 38px; width: 112px; height: 36px; }
+.dpad .v { left: 38px; top: 0; width: 36px; height: 112px; }
+.dpad .c { left: 47px; top: 47px; width: 18px; height: 18px; border-radius: 50%; background: radial-gradient(#25233a, #3c3a58); box-shadow: none; }
+.dpad .t { width: 0; height: 0; background: none; box-shadow: none; border: 7px solid transparent; border-radius: 0; }
+.dpad .t.u { left: 49px; top: 9px; border-bottom-color: #6a6790; border-top: 0; }
+.dpad .t.d { left: 49px; bottom: 9px; border-top-color: #6a6790; border-bottom: 0; }
+.dpad .t.l { top: 49px; left: 9px; border-right-color: #6a6790; border-left: 0; }
+.dpad .t.r { top: 49px; right: 9px; border-left-color: #6a6790; border-right: 0; }
+.dpad.p-UP { transform: perspective(240px) rotateX(10deg); } .dpad.p-DOWN { transform: perspective(240px) rotateX(-10deg); }
+.dpad.p-LEFT { transform: perspective(240px) rotateY(-10deg); } .dpad.p-RIGHT { transform: perspective(240px) rotateY(10deg); }
+.ab { position: absolute; right: 18px; bottom: 112px; width: 160px; height: 96px; transform: rotate(-24deg); }
+.ab::before { content: ''; position: absolute; left: -6px; top: 18px; width: 170px; height: 66px; border-radius: 33px; background: rgba(0,0,0,.08); }
+.rb { position: absolute; top: 24px; width: 56px; height: 56px; border-radius: 50%; border: 0; padding: 0; cursor: pointer; background: radial-gradient(circle at 36% 30%, #ff9a8a, #ff6b5b 60%); box-shadow: 0 6px 0 #b8382c; }
+.rb.b { left: 6px; } .rb.a { left: 96px; }
+.rb.down { transform: translateY(5px); box-shadow: 0 1px 0 #b8382c; }
+.ab span { position: absolute; top: 88px; font: 700 11px/1 var(--f-pix); color: #1f4f5c; }
+.ab span.b { left: 28px; } .ab span.a { left: 118px; }
+.ss { position: absolute; left: 108px; bottom: 34px; display: flex; gap: 22px; transform: rotate(-24deg); }
+.ss div { display: flex; flex-direction: column; align-items: center; gap: 7px; }
+.pill { width: 50px; height: 14px; border-radius: 8px; border: 0; padding: 0; cursor: pointer; background: #2c2a44; box-shadow: inset 0 -3px 0 rgba(0,0,0,.35), 0 0 0 3px rgba(0,0,0,.07); }
+.pill.down { background: #45426a; }
+.ss span { font: 700 7px/1 var(--f-pix); color: #1f4f5c; letter-spacing: .08em; }
+.grill { position: absolute; right: 38px; bottom: 34px; display: flex; gap: 8px; transform: rotate(-28deg); }
+.grill i { width: 6px; height: 58px; border-radius: 3px; background: #3fa58b; box-shadow: inset 1px 2px 0 rgba(0,0,0,.25); }
+/* deitado: tela no meio, controles nas laterais */
+.console.land { border-radius: 40px; }
+.console.land .bezel { left: 190px; right: auto; width: 460px; top: 16px; height: calc(var(--sh) + 40px); border-radius: 12px; }
+.console.land .brand { left: 30px; top: 36px; bottom: auto; }
+.console.land .brand b { font-size: 17px; }
+.console.land .brand small { font-size: 8px; }
+.console.land .dpad { left: 40px; top: 170px; bottom: auto; }
+.console.land .ab { right: 4px; top: 150px; bottom: auto; }
+.console.land .ss { left: auto; right: 34px; bottom: 34px; transform: none; }
+.console.land .grill { right: auto; left: 54px; bottom: 30px; transform: none; }
+.console.land .grill i { height: 34px; }
+#game :focus-visible, .console button:focus-visible { outline: 3px solid #ffcf3f; outline-offset: 2px; }
+#cv { position: absolute; left: 0; top: 0; image-rendering: pixelated; image-rendering: crisp-edges; }
+.px { image-rendering: pixelated; image-rendering: crisp-edges; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------- HUD ---------- */
+#hud { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
+#hud.hide > * { display: none; }
+.chip { background: var(--cream); border: 3px solid var(--ink); box-shadow: 0 3px 0 rgba(0,0,0,.35); border-radius: 6px; }
+.hud-l { position: absolute; left: 6px; top: 6px; padding: 4px 8px 5px; max-width: 62%; display: flex; flex-direction: column; gap: 1px; }
+.hud-l b { font: 700 9px/1.1 var(--f-pix); letter-spacing: .04em; color: var(--ui); }
+.hud-l span { font: 500 12px/1.15 var(--f-body); }
+.hud-r { position: absolute; right: 6px; top: 6px; display: flex; gap: 4px; pointer-events: auto; }
+.chip { border-width: 2px; box-shadow: 0 2px 0 rgba(0,0,0,.35); }
+.hbtn { height: 30px; min-width: 30px; padding: 0 6px; display: flex; align-items: center; justify-content: center; gap: 4px; cursor: pointer; font: 700 10px/1 var(--f-pix); }
+.hbtn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,.35); }
+.hbtn svg { width: 16px; height: 16px; display: block; }
+.toast { position: absolute; left: 50%; top: 46px; transform: translateX(-50%); padding: 5px 10px 6px; font: 600 13px/1.2 var(--f-body); white-space: nowrap; max-width: 94%; overflow: hidden; text-overflow: ellipsis; animation: tin .25s steps(3); }
+@keyframes tin { from { transform: translate(-50%, -12px); opacity: 0; } }
+.banner { position: absolute; left: 50%; top: 26%; transform: translateX(-50%); text-align: center; padding: 10px 18px 12px; color: #fff; background: var(--ui); border: 3px solid var(--ink); border-radius: 8px; box-shadow: 0 4px 0 rgba(0,0,0,.4); animation: bin 2.6s steps(12) forwards; white-space: nowrap; }
+.banner small { display: block; font: 700 10px/1.2 var(--f-pix); letter-spacing: .12em; opacity: .85; }
+.banner b { display: block; font: 700 16px/1.2 var(--f-pix); }
+@keyframes bin { 0% { opacity: 0; transform: translate(-50%, 10px); } 12%, 80% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; } }
+
+/* ---------- UI layers ---------- */
+#ui { position: absolute; inset: 0; z-index: 10; pointer-events: none; }
+#ui > * { pointer-events: auto; }
+.dlg { position: absolute; left: 6px; right: 6px; bottom: 6px; min-height: 84px; max-height: calc(100% - 12px); overflow: auto; display: flex; gap: 8px; padding: 8px 10px 12px; background: var(--cream); border: 3px solid var(--ink); border-radius: 8px; box-shadow: 0 4px 0 rgba(0,0,0,.4); cursor: pointer; }
+.dlg .por { flex: none; width: 46px; height: 46px; background: var(--paper-line); border: 2px solid var(--ink); border-radius: 5px; display: grid; place-items: center; align-self: flex-start; }
+.dlg .por canvas { width: 32px; height: 32px; }
+.dlg .bd { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.dlg .who { font: 700 9px/1.1 var(--f-pix); letter-spacing: .06em; color: var(--ui); }
+.dlg .tx { font: 500 15px/1.3 var(--f-body); min-height: 38px; overflow-wrap: break-word; }
+.dlg .tx b { color: var(--ui); }
+.dlg .nx { position: absolute; right: 12px; bottom: 6px; width: 0; height: 0; border: 7px solid transparent; border-top-color: var(--ink); border-bottom: 0; animation: blk .7s steps(1) infinite; }
+@keyframes blk { 50% { visibility: hidden; } }
+.opts { display: flex; flex-direction: column; gap: 4px; margin-top: 2px; }
+.opt { display: flex; align-items: center; gap: 6px; padding: 5px 8px; border: 2px solid var(--ink); border-radius: 5px; background: #fff; font: 600 14px/1.2 var(--f-body); cursor: pointer; text-align: left; }
+.opt::before { content: ''; flex: none; width: 0; height: 0; border-left: 8px solid transparent; border-top: 6px solid transparent; border-bottom: 6px solid transparent; }
+.opt.sel { background: var(--accent); }
+.opt.sel::before { border-left-color: var(--ink); }
+.opt.dis { opacity: .45; }
+
+.ov { position: absolute; inset: 0; display: grid; place-items: center; padding: 6px; background: rgba(16,14,30,.72); animation: ovin .18s steps(3); }
+@keyframes ovin { from { opacity: 0; } }
+.card { width: 100%; max-height: 100%; overflow: auto; background: var(--cream); border: 3px solid var(--ink); border-radius: 10px; box-shadow: 0 4px 0 rgba(0,0,0,.45); padding: 12px; display: flex; flex-direction: column; gap: 9px; }
+.card h2 { margin: 0; font: 700 14px/1.2 var(--f-pix); letter-spacing: .03em; }
+.card p { margin: 0; font: 500 15px/1.35 var(--f-body); }
+.hint { font: 700 8px/1.3 var(--f-pix); letter-spacing: .06em; opacity: .7; text-align: center; }
+.pbtn { align-self: center; padding: 8px 14px 9px; border: 3px solid var(--ink); border-radius: 7px; background: var(--accent); box-shadow: 0 3px 0 var(--ink); font: 700 11px/1 var(--f-pix); cursor: pointer; }
+.pbtn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+.list { display: flex; flex-direction: column; gap: 4px; }
+
+/* title */
+.title { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 12px; text-align: center; background: linear-gradient(rgba(16,14,30,.2), rgba(16,14,30,.78)); }
+.logo { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #fff; text-shadow: 0 3px 0 var(--ink), 3px 0 0 var(--ink), -3px 0 0 var(--ink), 0 -3px 0 var(--ink), 3px 3px 0 var(--ink); }
+.logo small { font: 700 9px/1 var(--f-pix); letter-spacing: .2em; color: var(--accent); }
+.logo b { font: 700 clamp(30px, 13cqw, 60px)/1 var(--f-pix); letter-spacing: .02em; }
+.logo span { font: 700 clamp(14px, 6cqw, 24px)/1 var(--f-pix); color: #9ff3d8; }
+.title .menu { display: flex; flex-direction: column; gap: 7px; width: min(240px, 86%); }
+.title .opt { justify-content: center; font: 700 11px/1.2 var(--f-pix); padding: 9px; }
+.title .opt::before { display: none; }
+.title .foot { font: 500 13px/1.3 var(--f-body); color: #e8e4ff; max-width: 300px; text-shadow: 0 2px 0 var(--ink); }
+.duo { display: flex; gap: 16px; align-items: flex-end; }
+.duo canvas { width: 48px; height: 48px; }
+.duo .vs { font: 700 11px/1 var(--f-pix); color: #fff; text-shadow: 0 2px 0 var(--ink); margin-bottom: 16px; }
+
+/* how */
+.steps { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.steps li { display: flex; gap: 10px; align-items: flex-start; font: 500 16px/1.35 var(--f-body); }
+.steps .n { flex: none; width: 26px; height: 26px; display: grid; place-items: center; border: 3px solid var(--ink); border-radius: 50%; background: var(--accent); font: 700 11px/1 var(--f-pix); }
+.keys { display: flex; flex-wrap: wrap; gap: 6px 14px; font: 500 15px/1.3 var(--f-body); }
+kbd { font: 700 10px/1 var(--f-pix); background: #fff; border: 2px solid var(--ink); border-radius: 4px; padding: 3px 5px 2px; box-shadow: 0 2px 0 var(--ink); }
+
+/* caderneta (livrinho) */
+.book { width: min(620px, 100%); max-height: 100%; display: flex; flex-direction: column; border: 4px solid var(--ink); border-radius: 12px; box-shadow: 0 6px 0 rgba(0,0,0,.45); overflow: hidden; background: var(--paper); }
+.cover { background: var(--cover); color: #fff; padding: 12px 16px 12px 26px; position: relative; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.cover::before { content: ''; position: absolute; left: 8px; top: 0; bottom: 0; width: 6px; background: repeating-linear-gradient(#fff 0 4px, transparent 4px 10px); opacity: .5; }
+.cover b { display: block; font: 700 15px/1.15 var(--f-pix); letter-spacing: .04em; }
+.cover small { display: block; font: 500 13px/1.2 var(--f-body); opacity: .85; }
+.cover .x { flex: none; width: 36px; height: 36px; border: 3px solid #fff; border-radius: 6px; background: transparent; color: #fff; font: 700 14px/1 var(--f-pix); cursor: pointer; }
+.pg { overflow: auto; padding: 12px 14px 14px; background: repeating-linear-gradient(var(--paper) 0 23px, var(--paper-line) 23px 24px); display: flex; flex-direction: column; gap: 10px; }
+.idrow { display: flex; flex-wrap: wrap; gap: 4px 16px; font: 600 15px/1.3 var(--f-body); }
+.idrow span b { font-family: var(--f-pix); font-size: 11px; letter-spacing: .04em; opacity: .7; margin-right: 4px; }
+.slots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.slot { position: relative; min-height: 96px; padding: 8px 10px 10px; background: #fffdf6; border: 3px solid var(--ink); border-radius: 8px; cursor: pointer; display: flex; flex-direction: column; gap: 3px; overflow: hidden; }
+.slot.sel { outline: 4px solid var(--accent); outline-offset: 1px; }
+.slot .nm { font: 700 12px/1.15 var(--f-pix); letter-spacing: .02em; padding-right: 22px; }
+.slot .pr { font: 500 13px/1.25 var(--f-body); opacity: .8; }
+.slot .ds { display: flex; gap: 4px; margin-top: auto; align-items: center; font: 700 9px/1 var(--f-pix); }
+.slot .ds i { width: 11px; height: 11px; border: 2px solid var(--ink); border-radius: 50%; }
+.slot .ds i.on { background: var(--ink); }
+.slot .area { position: absolute; right: 8px; top: 8px; width: 18px; height: 18px; }
+.slot .tag { align-self: flex-start; font: 700 9px/1 var(--f-pix); padding: 3px 5px 2px; border-radius: 3px; background: var(--warn); color: #fff; }
+.stamp { position: absolute; right: 6px; bottom: 6px; width: 78px; height: 78px; border-radius: 50%; border: 3px solid currentColor; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; transform: rotate(-14deg); opacity: .82; pointer-events: none; mix-blend-mode: multiply; }
+.stamp::before { content: ''; position: absolute; inset: 4px; border: 1.5px dashed currentColor; border-radius: 50%; }
+.stamp b { font: 700 9px/1.1 var(--f-pix); letter-spacing: .04em; }
+.stamp small { font: 600 11px/1.1 var(--f-body); }
+.stamp.part { border-style: dashed; opacity: .6; }
+.stamp.pop { animation: stp .4s steps(4); }
+@keyframes stp { from { transform: rotate(-14deg) scale(1.8); opacity: 0; } }
+.detail { border: 3px solid var(--ink); border-radius: 8px; background: #fffdf6; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+.detail h3 { margin: 0; font: 700 14px/1.2 var(--f-pix); }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 3px 10px; font: 500 15px/1.3 var(--f-body); }
+.kv dt { font: 700 10px/1.6 var(--f-pix); opacity: .7; }
+.kv dd { margin: 0; }
+
+/* mapa */
+.mapwrap { position: relative; border: 3px solid var(--ink); border-radius: 6px; overflow: hidden; background: #1d1b2e; }
+.mapwrap canvas { display: block; width: 100%; height: auto; }
+.mlab { position: absolute; transform: translate(-50%, -50%); font: 700 9px/1.1 var(--f-pix); color: #fff; text-shadow: 0 1px 0 #000, 1px 0 0 #000, -1px 0 0 #000, 0 -1px 0 #000; text-align: center; white-space: nowrap; pointer-events: none; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font: 500 14px/1.3 var(--f-body); }
+.legend i { display: inline-block; width: 12px; height: 12px; border: 2px solid var(--ink); margin-right: 5px; vertical-align: -1px; }
+
+/* NFC */
+.app { background: #e9fbf6; }
+.apphead { display: flex; align-items: center; gap: 8px; padding: 8px 10px; margin: -16px -16px 0; background: #1fa39a; color: #fff; border-bottom: 4px solid var(--ink); }
+.apphead b { font: 700 13px/1.1 var(--f-pix); }
+.apphead small { font: 500 12px/1.2 var(--f-body); opacity: .9; display: block; }
+.vopt { display: flex; align-items: center; gap: 8px; }
+.vopt .r { margin-left: auto; font: 700 9px/1 var(--f-pix); opacity: .75; }
+.tap { position: relative; height: 170px; border: 3px dashed var(--ink); border-radius: 10px; background: #fff; overflow: hidden; }
+.phone { position: absolute; top: 28px; width: 70px; height: 122px; border: 4px solid var(--ink); border-radius: 12px; background: #2d2b45; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; color: #fff; font: 700 8px/1.1 var(--f-pix); text-align: center; padding: 6px; }
+.phone .scr { width: 100%; flex: 1; border-radius: 4px; display: grid; place-items: center; font: 700 9px/1.2 var(--f-pix); }
+.phone.l { left: 14%; animation: ml 1.1s steps(8) forwards; }
+.phone.l .scr { background: #1fa39a; }
+.phone.r { right: 14%; animation: mr 1.1s steps(8) forwards; }
+.phone.r .scr { background: var(--cover); }
+@keyframes ml { to { left: calc(50% - 72px); } }
+@keyframes mr { to { right: calc(50% - 72px); } }
+.waves { position: absolute; left: 50%; top: 6px; transform: translateX(-50%); display: flex; gap: 4px; opacity: 0; animation: wv .5s steps(2) 1.1s infinite; }
+.waves i { width: 10px; height: 18px; border: 3px solid var(--ink); border-left: 0; border-radius: 0 12px 12px 0; }
+@keyframes wv { 0% { opacity: 1; } 50% { opacity: .2; } 100% { opacity: 1; } }
+.tapmsg { text-align: center; font: 700 12px/1.3 var(--f-pix); min-height: 16px; }
+.ticket { border: 3px solid var(--ink); border-radius: 8px; background: #fff; padding: 12px 14px; position: relative; display: flex; flex-direction: column; gap: 8px; }
+.ticket::after { content: ''; position: absolute; left: -3px; right: -3px; bottom: -10px; height: 10px; background: radial-gradient(circle at 6px 0, transparent 5px, #fff 5.5px) 0 0 / 12px 10px repeat-x; }
+.ok { display: inline-flex; align-items: center; gap: 6px; font: 700 11px/1 var(--f-pix); color: var(--ok); }
+.ok::before { content: ''; width: 14px; height: 14px; border-radius: 50%; background: var(--ok); box-shadow: inset 0 0 0 3px #fff; border: 2px solid var(--ok); }
+
+/* celebração */
+.cele { text-align: center; align-items: center; color: #fff; background: var(--ui); }
+.cele h2 { font-size: clamp(22px, 6vw, 30px); text-shadow: 0 3px 0 var(--ink); }
+.cele p { text-shadow: 0 2px 0 rgba(0,0,0,.35); }
+.cele .big { width: 96px; height: 96px; }
+.cele .pbtn { color: var(--ink); }
+.conf { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.conf i { position: absolute; top: -12px; width: 8px; height: 8px; animation: fall 1.8s steps(14) forwards; }
+@keyframes fall { to { transform: translateY(110vh) rotate(540deg); } }
+.syncl { display: flex; flex-direction: column; gap: 6px; font: 600 16px/1.3 var(--f-body); min-height: 150px; }
+.syncl div { display: flex; justify-content: space-between; gap: 10px; border-bottom: 2px dotted var(--paper-line); padding-bottom: 4px; animation: tin2 .2s steps(2); }
+@keyframes tin2 { from { opacity: 0; } }
+
+/* tudo vive dentro da tela do console: tamanhos compactos */
+.steps li { font-size: 14px; gap: 8px; } .steps .n { width: 22px; height: 22px; font-size: 9px; border-width: 2px; }
+.keys { font-size: 13px; }
+.book { width: 100%; border-width: 3px; border-radius: 10px; }
+.cover { padding: 8px 10px 8px 22px; } .cover b { font-size: 11px; } .cover small { font-size: 11px; }
+.cover .x { width: 28px; height: 28px; font-size: 11px; border-width: 2px; }
+.pg { padding: 8px 10px 10px; gap: 8px; } .idrow { font-size: 13px; gap: 2px 12px; } .idrow span b { font-size: 9px; }
+.slots { gap: 7px; } .slot { min-height: 80px; padding: 6px 8px 8px; border-width: 2px; }
+.slot .nm { font-size: 10px; } .slot .pr { font-size: 12px; } .slot .tag { font-size: 7px; }
+.stamp { width: 64px; height: 64px; right: 4px; bottom: 4px; } .stamp b { font-size: 7px; } .stamp small { font-size: 9px; }
+.kv { font-size: 13px; gap: 2px 8px; } .kv dt { font-size: 8px; }
+.mlab { font-size: 6px; } .legend { font-size: 12px; }
+.apphead { margin: -12px -12px 0; padding: 6px 8px; border-bottom-width: 3px; } .apphead b { font-size: 11px; } .apphead small { font-size: 11px; }
+.tap { height: 150px; } .phone { top: 22px; width: 62px; height: 108px; border-width: 3px; }
+@keyframes ml { to { left: calc(50% - 64px); } }
+@keyframes mr { to { right: calc(50% - 64px); } }
+.tapmsg { font-size: 10px; } .ticket { padding: 8px 10px; }
+.code { width: 100%; padding: 10px 12px; border: 3px solid var(--ink); border-radius: 8px; background: #fff; font: 700 20px/1 var(--f-pix); letter-spacing: .12em; text-align: center; text-transform: uppercase; color: var(--ink); user-select: text; -webkit-user-select: text; touch-action: manipulation; }
+.code:focus { outline: 3px solid #1fa39a; outline-offset: 1px; }
+.err { min-height: 0; font: 600 13px/1.3 var(--f-body); color: #c0392b; }
+.err:empty { display: none; }
+.row2 { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.row2 .pbtn { align-self: auto; }
+.pbtn.ghost { background: #fff; }
+.pbtn.scan { display: flex; align-items: center; gap: 10px; padding: 12px 18px; font-size: 13px; background: #1fa39a; color: #fff; }
+.qri { width: 22px; height: 22px; flex: none; background:
+  linear-gradient(#fff, #fff) 0 0 / 9px 9px no-repeat, linear-gradient(#fff, #fff) 100% 0 / 9px 9px no-repeat,
+  linear-gradient(#fff, #fff) 0 100% / 9px 9px no-repeat, linear-gradient(#fff, #fff) 70% 70% / 5px 5px no-repeat; }
+.orsep { display: flex; align-items: center; gap: 8px; font: 700 8px/1 var(--f-pix); letter-spacing: .08em; opacity: .7; }
+.orsep::before, .orsep::after { content: ''; flex: 1; height: 2px; background: var(--ink); opacity: .3; }
+.qrbox { align-self: center; padding: 8px; background: #fff; border: 3px solid var(--ink); border-radius: 8px; }
+.qrbox .qr { display: block; width: min(190px, 52cqw); height: auto; }
+.bigcode { padding: 14px 8px; border: 3px dashed var(--ink); border-radius: 10px; background: #fff; text-align: center; font: 700 clamp(18px, 7.5cqw, 30px)/1 var(--f-pix); letter-spacing: .08em; white-space: nowrap; user-select: text; -webkit-user-select: text; }
+.cele h2 { font-size: clamp(18px, 7cqw, 26px); } .cele .big { width: 72px; height: 72px; }
+.syncl { font-size: 14px; min-height: 120px; }
+@container (max-width: 380px) { .slots { grid-template-columns: 1fr; } }
+@container (max-width: 430px) { .hud-l { top: 42px; max-width: calc(100% - 12px); } .toast { top: 92px; } }
+@media (prefers-reduced-motion: reduce) {
+  .banner, .stamp.pop, .conf i, .waves, .phone.l, .phone.r, .dlg .nx { animation-duration: .01s !important; animation-iteration-count: 1 !important; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="stage" id="stage">
+<div class="console" id="console">
+  <div class="bezel">
+    <i class="led"></i><div class="blbl">CARTUCHO · CADERNETA VIVA</div>
+<div id="game">
+  <canvas id="cv" aria-label="Mundo do jogo Caderneta Viva"></canvas>
+  <div id="hud" class="hide">
+    <div class="hud-l chip" id="hudL"><b id="hudReg">VILA IMUNE</b><span id="hudObj"></span></div>
+    <div class="hud-r">
+      <div class="chip hbtn" id="hudIns" title="Insígnias"></div>
+      <button type="button" class="chip hbtn" id="bBook" aria-label="Abrir caderneta (C)"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 3h6a2 2 0 0 1 2 2v12a2 2 0 0 0-2-2H3z M17 3h-4a2 2 0 0 0-2 2v12a2 2 0 0 1 2-2h4z"/></svg></button>
+      <button type="button" class="chip hbtn" id="bMap" aria-label="Abrir mapa (M)"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M2 5l5-2 6 2 5-2v12l-5 2-6-2-5 2z M7 3v12 M13 5v12"/></svg></button>
+    </div>
+  </div>
+  <div id="ui"></div>
+</div>
+  </div>
+  <div class="brand"><small>CADERNETA VIVA</small><b>VAXI BOY</b></div>
+  <div class="dpad" id="dpad" aria-label="Direcional">
+    <i class="h"></i><i class="v"></i><i class="c"></i><i class="t u"></i><i class="t d"></i><i class="t l"></i><i class="t r"></i>
+  </div>
+  <div class="ab">
+    <button type="button" class="rb b" data-k="B" aria-label="Botão B: voltar e menu" tabindex="-1"></button>
+    <button type="button" class="rb a" data-k="A" aria-label="Botão A: falar e confirmar" tabindex="-1"></button>
+    <span class="b">B</span><span class="a">A</span>
+  </div>
+  <div class="ss">
+    <div><button type="button" class="pill" data-k="BOOK" aria-label="Select: caderneta" tabindex="-1"></button><span>SELECT</span></div>
+    <div><button type="button" class="pill" data-k="MENU" aria-label="Start: menu" tabindex="-1"></button><span>START</span></div>
+  </div>
+  <div class="grill" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</div>
+</div>
+</div>
+<div id="live" class="sr" aria-live="polite"></div>
+
+<script>
+(() => {
+'use strict';
+const $ = id => document.getElementById(id);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const wait = ms => new Promise(r => setTimeout(r, ms));
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function h(tag, attrs, ...kids) {
+  const e = document.createElement(tag);
+  if (attrs) for (const k in attrs) {
+    const v = attrs[k];
+    if (v == null || v === false) continue;
+    if (k === 'class') e.className = v;
+    else if (k === 'style') e.style.cssText = v;
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
+    else e.setAttribute(k, v);
+  }
+  for (const c of kids.flat()) { if (c == null || c === false) continue; e.append(c instanceof Node ? c : document.createTextNode(String(c))); }
+  return e;
+}
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+  del(k) { try { localStorage.removeItem(k); } catch (e) {} }
+};
+function mulberry(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const hash = (x, y) => { let n = x * 374761393 + y * 668265263; n = (n ^ (n >>> 13)) * 1274126177; return (n ^ (n >>> 16)) >>> 0; };
+function shade(hex, f) {
+  const n = parseInt(hex.slice(1), 16); let r = n >> 16, g = n >> 8 & 255, b = n & 255;
+  if (f < 0) { r *= 1 + f; g *= 1 + f; b *= 1 + f; } else { r += (255 - r) * f; g += (255 - g) * f; b += (255 - b) * f; }
+  return '#' + [r, g, b].map(v => Math.round(v).toString(16).padStart(2, '0')).join('');
+}
+const fmt = d => { const x = new Date(d); return String(x.getDate()).padStart(2, '0') + '/' + String(x.getMonth() + 1).padStart(2, '0') + '/' + x.getFullYear(); };
+const live = t => { $('live').textContent = t; };
+
+/* ================= DADOS ================= */
+const K = '#1d1b2e';
+const VAC = {
+  hpv:    { nome: 'HPV', curto: 'HPV', need: 1, idade: '9 a 14 anos', ages: [9, 14], protege: 'Papilomavírus humano. Previne verrugas e vários tipos de câncer no futuro.', esquema: 'Dose única, para meninas e meninos.' },
+  acwy:   { nome: 'Meningocócica ACWY', curto: 'Meningo ACWY', need: 1, idade: '11 a 14 anos', ages: [11, 14], protege: 'Meningite e infecções graves causadas pelo meningococo A, C, W e Y.', esquema: '1 dose (reforça a meningo C da infância).' },
+  dt:     { nome: 'dT (dupla adulto)', curto: 'dT · Dupla', need: 1, idade: 'reforço aos 14 anos e depois a cada 10', ages: [14, 99], protege: 'Difteria e tétano.', esquema: 'Reforço a cada 10 anos. O profissional confere as doses da infância.' },
+  gripe:  { nome: 'Influenza (gripe)', curto: 'Gripe', need: 1, idade: 'campanha anual', ages: null, protege: 'Gripe causada pelo vírus influenza, que muda todo ano.', esquema: '1 dose por ano na campanha. Confira se sua idade está incluída.', anual: true },
+  fa:     { nome: 'Febre amarela', curto: 'Febre amarela', need: 1, idade: '9 meses e 4 anos', ages: null, protege: 'Febre amarela, transmitida pela picada de mosquitos.', esquema: '1 dose aos 9 meses e reforço aos 4 anos. Quem não tomou pode tomar depois.' },
+  dengue: { nome: 'Dengue', curto: 'Dengue', need: 2, idade: '10 a 14 anos', ages: [10, 14], protege: 'Dengue, transmitida pelo mosquito Aedes aegypti.', esquema: '2 doses, com 3 meses de intervalo.' },
+  hepb:   { nome: 'Hepatite B', curto: 'Hepatite B', need: 3, idade: 'ao nascer e no 1º ano', ages: null, protege: 'Hepatite B, vírus que ataca o fígado.', esquema: 'Esquema completo na infância. Se faltou dose, dá para completar em qualquer idade.' },
+  scr:    { nome: 'Tríplice viral', curto: 'Tríplice viral', need: 2, idade: '12 e 15 meses', ages: null, protege: 'Sarampo, caxumba e rubéola.', esquema: '2 doses na infância. Se faltou, dá para completar depois.' },
+};
+const VAC_ORDER = ['hpv', 'acwy', 'dt', 'gripe', 'fa', 'dengue', 'hepb', 'scr'];
+
+const THEMES = {
+  vila:   { ground: 'grass',  g: ['#9bd86f', '#7cc35a', '#5aa244'], path: ['#efd9a2', '#d3b77c'], water: ['#7fd0f2', '#4a9bd8'], leaf: ['#4fa34a', '#2f7a3a'], trunk: '#7a4e2d', acc: ['#ffd84a', '#ff7aa8'], wall: ['#b9a38a', '#8b7258', '#d9c7ae'], ui: '#3f8f3c', tree: 'round', germ: '#9b4ad1' },
+  jardim: { ground: 'grass',  g: ['#b3e48a', '#93d06c', '#6fb052'], path: ['#f8dbe6', '#e6b7ca'], water: ['#8fd6f2', '#5aa6d8'], leaf: ['#3d9b5a', '#24704a'], trunk: '#6b3f2a', acc: ['#ff5f9e', '#ffffff'], wall: ['#e9a3bd', '#bf6a8d', '#f8cadb'], ui: '#cf3f7c', tree: 'hedge', germ: '#d94f4f' },
+  torre:  { ground: 'tiles',  g: ['#cfc6f2', '#b1a5e6', '#8b7cd0'], path: ['#e2dcf8', '#c3b8ee'], water: ['#8fd6f2', '#5aa6d8'], leaf: ['#7d6bd0', '#5442a8'], trunk: '#3b2c7a', acc: ['#ffe66d', '#9ff3ff'], wall: ['#6a58b8', '#46378f', '#8c7bd6'], ui: '#5f45c4', tree: 'neuron', germ: '#e0663a' },
+  porto:  { ground: 'planks', g: ['#ddb486', '#c69a69', '#9f744a'], path: ['#ddb486', '#c69a69'], water: ['#5b9bd0', '#336ea6'], leaf: ['#5a8a4a', '#3d6a35'], trunk: '#6b4a2a', acc: ['#e0663a', '#f2b56b'], wall: ['#b5643a', '#874322', '#d9895a'], ui: '#b8532a', tree: 'round', germ: '#6d8f2a' },
+  pico:   { ground: 'snow',   g: ['#ffffff', '#e8eff9', '#c6d4e9'], path: ['#eef3fa', '#d3ddeb'], water: ['#b5e3f7', '#7cbde6'], leaf: ['#3f7f6a', '#285a4c'], trunk: '#5b4636', acc: ['#8fd3ff', '#ffffff'], wall: ['#8fa4c2', '#5f7598', '#b8c7dc'], ui: '#3a6bb0', tree: 'pine', germ: '#4a9b5a' },
+  mata:   { ground: 'grass',  g: ['#86cc4c', '#6ab83c', '#4a942a'], path: ['#ecca70', '#cca84c'], water: ['#7fd0f2', '#4a9bd8'], leaf: ['#2f8f3a', '#1b632a'], trunk: '#6a4220', acc: ['#ffcf2e', '#ff9f1c'], wall: ['#c99a2e', '#94701c', '#e8c158'], ui: '#b98500', tree: 'jungle', germ: '#c43a8a' },
+  lagoa:  { ground: 'grass',  g: ['#a6dcb8', '#86c79c', '#62a87c'], path: ['#e0d6ab', '#c3b588'], water: ['#66cfc6', '#349e9c'], leaf: ['#3e9a6a', '#287550'], trunk: '#5d4630', acc: ['#ffffff', '#c6f3ea'], wall: ['#7bb5a8', '#507f73', '#a3d6c9'], ui: '#21857f', tree: 'round', germ: '#3a3a3a' },
+  usina:  { ground: 'metal',  g: ['#d6cabd', '#b9ab9c', '#94867a'], path: ['#e2d7ca', '#c3b6a6'], water: ['#7fd0f2', '#4a9bd8'], leaf: ['#c96a3b', '#9a4a24'], trunk: '#5a3a2a', acc: ['#ffb347', '#ff6b4a'], wall: ['#a8473a', '#772c24', '#c86a5c'], ui: '#a93b2b', tree: 'tank', germ: '#7a3fd1' },
+  ilhas:  { ground: 'sand',   g: ['#fbe9b6', '#f1d797', '#dcbd77'], path: ['#fbe9b6', '#f1d797'], water: ['#56c6ec', '#2c93ca'], leaf: ['#4fb04a', '#2f8a3a'], trunk: '#8a5a32', acc: ['#ff8a5b', '#ffd84a'], wall: ['#d9b878', '#b08d52', '#efd7a0'], ui: '#2386bd', tree: 'palm', germ: '#d13f5a' },
+};
+
+const LOOK = {
+  hero:  { skin: '#f2c29b', hair: '#4a2b1f', shirt: '#e24b4b', pants: '#2f4a8a', shoe: '#2b2b3a', cap: '#ffcf3f' },
+  ana:   { skin: '#c98b62', hair: '#2a1a12', shirt: '#ffffff', pants: '#7fc8d8', shoe: '#ffffff', hat: '#ffffff', long: 1 },
+  vovo:  { skin: '#f0c8a8', hair: '#e8e8f0', shirt: '#9b6bc7', pants: '#6a4a9a', shoe: '#3a2a2a', long: 1 },
+  leo:   { skin: '#8a5a3c', hair: '#1a1210', shirt: '#3fb37f', pants: '#3a3a5a', shoe: '#222233' },
+  bia:   { skin: '#e9b48c', hair: '#d94f2b', shirt: '#ffcf3f', pants: '#4a6fd0', shoe: '#222233', long: 1 },
+  caio:  { skin: '#b77a52', hair: '#2b1b12', shirt: '#3d7fd6', pants: '#2b3550', shoe: '#222233', cap: '#3d7fd6' },
+  ze:    { skin: '#f1c6a0', hair: '#8a8a8a', shirt: '#e08a2e', pants: '#5a4630', shoe: '#222233' },
+};
+
+const REGIONS = [
+  { id: 'jardim', vac: 'hpv', row: 0, col: 0, name: 'Jardim Escudo', gname: 'Dra. Flora', look: { skin: '#e9b48c', hair: '#7a2f5a', shirt: '#ffffff', pants: '#cf3f7c', shoe: '#3a2a2a', cape: '#cf3f7c', long: 1 },
+    intro: ['Bem-vindo ao <b>Jardim Escudo</b>! Aqui as flores crescem protegidas.', 'A vacina do <b>HPV</b> protege contra um vírus muito comum, que pode causar verrugas e alguns tipos de câncer anos depois.'],
+    q: 'Quem deve tomar a vacina do HPV pelo SUS?', opts: ['Só as meninas', 'Meninas e meninos de 9 a 14 anos', 'Só adultos'], ok: 1,
+    exp: 'Isso! <b>Meninas e meninos de 9 a 14 anos</b> tomam dose única. Quanto mais cedo, melhor a proteção.', badge: 'Flor-Escudo' },
+  { id: 'torre', vac: 'acwy', row: 0, col: 1, name: 'Torre da Mente', gname: 'Prof. Neuro', look: { skin: '#f2c29b', hair: '#3a2c6a', shirt: '#ffe66d', pants: '#3b2c7a', shoe: '#222233', cape: '#5f45c4' },
+    intro: ['Esta torre representa o cérebro e a medula, protegidos por membranas chamadas <b>meninges</b>.', 'Quando elas inflamam por causa de uma bactéria, é a <b>meningite</b>: uma doença rápida e grave.'],
+    q: 'O que a vacina meningocócica ACWY ajuda a prevenir?', opts: ['Cárie', 'Meningite', 'Miopia'], ok: 1,
+    exp: 'Exato! A ACWY protege contra 4 tipos de meningococo. No SUS, é para quem tem <b>11 a 14 anos</b>.', badge: 'Mente Blindada' },
+  { id: 'porto', vac: 'dt', row: 0, col: 2, name: 'Porto Ferrugem', gname: 'Capitã Tétis', look: { skin: '#a8714a', hair: '#1a1210', shirt: '#ffffff', pants: '#2b3a6a', shoe: '#222233', cape: '#b8532a', cap: '#2b3a6a' },
+    intro: ['Ahoy! No porto tem muito metal, terra e farpa de madeira.', 'A <b>dT</b> protege contra <b>tétano</b> e <b>difteria</b>. O reforço é a cada 10 anos!'],
+    q: 'Como a bactéria do tétano costuma entrar no corpo?', opts: ['Pelo ar, quando alguém espirra', 'Por machucados sujos de terra ou poeira', 'Comendo doce demais'], ok: 1,
+    exp: 'Isso! A bactéria vive na terra e na poeira. A <b>ferrugem em si não causa tétano</b>: o perigo é a sujeira no machucado.', badge: 'Âncora' },
+  { id: 'pico', vac: 'gripe', row: 0, col: 3, name: 'Pico dos Ventos', gname: 'Mestre Brisa', look: { skin: '#f0c8a8', hair: '#ffffff', shirt: '#8fd3ff', pants: '#3a6bb0', shoe: '#222233', cape: '#3a6bb0', long: 1 },
+    intro: ['Brrr! No Pico dos Ventos, o vírus da gripe troca de roupa todo ano.', 'Por isso a vacina da <b>gripe</b> é atualizada e aplicada em <b>campanhas anuais</b>.'],
+    q: 'Por que a vacina da gripe é tomada todo ano?', opts: ['Porque o vírus influenza muda', 'Porque a vacina some do braço', 'Porque é só para quem faz aniversário'], ok: 0,
+    exp: 'Certo! O vírus muda, então a vacina também é atualizada. Fique de olho nas <b>campanhas da UBS</b>.', badge: 'Vento Norte' },
+  { id: 'mata', vac: 'fa', row: 1, col: 0, name: 'Mata Dourada', gname: 'Guarda Sagui', look: { skin: '#8a5a3c', hair: '#c98a1a', shirt: '#2f8f3a', pants: '#6a4220', shoe: '#222233', cape: '#b98500', cap: '#2f8f3a' },
+    intro: ['Psiu! Na Mata Dourada vivem macacos e mosquitos silvestres.', 'A <b>febre amarela</b> é transmitida pela picada de mosquitos. A vacina é a melhor proteção.'],
+    q: 'Os macacos transmitem febre amarela para as pessoas?', opts: ['Sim, quando mordem', 'Não: eles também adoecem e servem de alerta', 'Só os macacos amarelos'], ok: 1,
+    exp: 'Isso! Quem transmite é o <b>mosquito</b>. Macacos doentes avisam que o vírus está por perto. <b>Nunca machuque um macaco!</b>', badge: 'Sol da Mata' },
+  { id: 'lagoa', vac: 'dengue', row: 1, col: 1, name: 'Lagoa Parada', gname: 'Sra. Garça', obj: 'focos', look: { skin: '#f2c29b', hair: '#2a1a12', shirt: '#ffffff', pants: '#21857f', shoe: '#222233', cape: '#21857f', long: 1 },
+    intro: ['Bem-vindo à Lagoa! O mosquito <b>Aedes aegypti</b> adora água parada para botar ovos.', 'A vacina da <b>dengue</b> tem <b>2 doses</b>, com 3 meses de intervalo. E cuidar dos focos continua importante!'],
+    q: 'Além de tomar as 2 doses, o que ajuda a combater a dengue?', opts: ['Deixar pneus no quintal', 'Eliminar água parada', 'Usar casaco no calor'], ok: 1,
+    exp: 'Mandou bem! Vaso, pneu, garrafa, calha: <b>toda água parada</b> pode virar berçário de mosquito.', badge: 'Gota Limpa' },
+  { id: 'usina', vac: 'hepb', row: 1, col: 2, name: 'Usina do Fígado', gname: 'Eng. Hepa', look: { skin: '#c98b62', hair: '#2b1b12', shirt: '#ffb347', pants: '#5a3a2a', shoe: '#222233', cape: '#a93b2b', cap: '#ffcf3f' },
+    intro: ['Esta usina funciona como o <b>fígado</b>: filtra o sangue e cuida de centenas de tarefas!', 'A <b>hepatite B</b> é um vírus que inflama o fígado. A vacina começa logo ao nascer.'],
+    q: 'Qual órgão a hepatite B ataca?', opts: ['Pulmão', 'Fígado', 'Coração'], ok: 1,
+    exp: 'Exato! E se alguma dose faltou na infância, dá para <b>completar em qualquer idade</b> na UBS.', badge: 'Filtro de Ouro' },
+  { id: 'ilhas', vac: 'scr', row: 1, col: 3, name: 'Ilhas Tríplices', gname: 'Capitão Trio', look: { skin: '#f1c6a0', hair: '#d9a03a', shirt: '#ff8a5b', pants: '#2386bd', shoe: '#222233', cape: '#2386bd', cap: '#ffffff' },
+    intro: ['Três ilhas, três ameaças: <b>sarampo</b>, <b>caxumba</b> e <b>rubéola</b>.', 'O sarampo é tão contagioso que pode passar para até <b>9 em cada 10</b> pessoas próximas que não estão protegidas.'],
+    q: 'A tríplice viral protege contra quais doenças?', opts: ['Sarampo, caxumba e rubéola', 'Gripe, dengue e tétano', 'Catapora, HPV e gripe'], ok: 0,
+    exp: 'Isso aí! São <b>2 doses na infância</b>. Se faltou alguma, dá para tomar depois.', badge: 'Três Mares' },
+];
+const RBY = Object.fromEntries(REGIONS.map(r => [r.id, r]));
+const RBV = Object.fromEntries(REGIONS.map(r => [r.vac, r]));
+
+/* ================= ESTADO ================= */
+const SAVE_KEY = 'caderneta-viva-v1';
+const fresh = () => ({ v: 1, started: false, age: 12, synced: false, doses: {}, prog: {}, ins: {}, met: {}, pos: { x: 32, y: 17, dir: 'R' }, done: false });
+let S = fresh();
+let soundOn = store.get('caderneta-viva-sound', true);
+const save = () => { if (!S.started) return; S.pos = { x: P.x, y: P.y, dir: P.dir }; store.set(SAVE_KEY, S); };
+const doses = v => S.doses[v] || [];
+const isOpen = r => doses(r.vac).length > 0;
+const complete = v => doses(v).length >= VAC[v].need;
+const insCount = () => Object.keys(S.ins).length;
+const progOf = r => S.prog[r.id] || (S.prog[r.id] = []);
+const objTotal = r => r.obj === 'focos' ? r.buckets.length : r.germs.length;
+const objDone = r => progOf(r).length >= objTotal(r);
+function recNow(v) {
+  const a = VAC[v].ages; if (!a) return false;
+  return S.age >= a[0] && S.age <= a[1] && !complete(v);
+}
+
+/* ================= MAPA ================= */
+const MW = 64, MH = 36, T = 16;
+const map = Array.from({ length: MH }, () => Array(MW).fill('.'));
+const GATES_X = [8, 24, 40, 56];
+const TD = {
+  '.': {}, ':': { path: 1 }, '~': { solid: 1, water: 1 }, 'T': { solid: 1, o: 'tree' }, 'R': { solid: 1, o: 'rock' }, 'C': { solid: 1, o: 'crate' },
+  '=': { solid: 1, o: 'pipe' }, '*': { o: 'flower' }, ',': { o: 'reed' }, '#': { solid: 1, wall: 1 }, 'S': { solid: 1, o: 'sign' }, 'B': { bridge: 1 },
+  'G': { gate: 1 }, 'X': { solid: 1 }, 'D': { solid: 1, door: 1 },
+};
+function regAt(x, y) { if (y <= 13) return REGIONS[x >> 4]; if (y >= 22) return REGIONS[4 + (x >> 4)]; return null; }
+const themeKey = (x, y) => { const r = regAt(x, y); return r ? r.id : 'vila'; };
+const inMap = (x, y) => x >= 0 && y >= 0 && x < MW && y < MH;
+function tileSolid(x, y) {
+  if (!inMap(x, y)) return true;
+  const c = map[y][x], d = TD[c];
+  if (d.gate) return !isOpen(regAt(x, y));
+  return !!d.solid;
+}
+
+const houses = [];
+const buildings = [];
+function genVila() {
+  for (let y = 14; y <= 21; y++) for (let x = 0; x < MW; x++) {
+    let t = '.';
+    if (x === 0 || x === MW - 1) t = 'T';
+    else if (y === 17 || y === 18) t = ':';
+    map[y][x] = t;
+  }
+  GATES_X.forEach(gx => { for (let y = 14; y <= 21; y++) map[y][gx] = ':'; map[14][gx + 1] = 'S'; map[21][gx + 1] = 'S'; });
+  const roofs = ['#d9534f', '#4a7fd0', '#e08a2e', '#7a5bc9', '#3fa27a', '#cf3f7c', '#2a9bb0'];
+  const put = (x, y) => { map[y][x] = map[y][x + 1] = map[y + 1][x] = map[y + 1][x + 1] = 'X'; houses.push({ x, y, roof: roofs[houses.length % roofs.length], idx: houses.length }); };
+  [2, 12, 18, 35, 45, 50, 60].forEach(x => put(x, 15));
+  [3, 13, 20, 28, 34, 46, 51, 60].forEach(x => put(x, 19));
+  for (let x = 30; x <= 32; x++) { map[15][x] = 'X'; map[16][x] = 'X'; }
+  map[16][31] = 'D';
+  buildings.push({ kind: 'ubs', x: 30, y: 15 });
+  [[5, 14, 'T'], [15, 14, '*'], [22, 21, '*'], [27, 14, 'T'], [38, 21, 'T'], [43, 14, '*'], [53, 14, 'T'], [58, 21, '*'], [11, 21, 'T'], [33, 21, '*'], [48, 21, '*'], [62, 14, '*'], [16, 21, 'T'], [29, 14, '*'], [36, 14, '*'], [1, 15, '*'], [62, 20, 'T']]
+    .forEach(([x, y, t]) => { if (map[y][x] === '.') map[y][x] = t; });
+}
+
+const DIRS = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+function bfs(sx, sy, inside, solid) {
+  const dist = new Map([[sx + ',' + sy, 0]]); const q = [[sx, sy]];
+  while (q.length) {
+    const [x, y] = q.shift(); const d0 = dist.get(x + ',' + y);
+    for (const [dx, dy] of DIRS) {
+      const nx = x + dx, ny = y + dy, k = nx + ',' + ny;
+      if (dist.has(k) || !inside(nx, ny) || solid(nx, ny)) continue;
+      dist.set(k, d0 + 1); q.push([nx, ny]);
+    }
+  }
+  return dist;
+}
+
+function genRegion(r, ri) {
+  const x0 = r.col * 16, y0 = r.row === 0 ? 0 : 22;
+  r.x0 = x0; r.y0 = y0;
+  const rnd = mulberry(1000 + ri * 77);
+  const ground = (r.id === 'porto' || r.id === 'usina') ? ':' : '.';
+  const set = (ix, iy, c) => { if (ix >= 1 && ix <= 14 && iy >= 1 && iy <= 12) map[y0 + iy][x0 + ix] = c; };
+  const get = (ix, iy) => map[y0 + iy][x0 + ix];
+  for (let iy = 0; iy < 14; iy++) for (let ix = 0; ix < 16; ix++) map[y0 + iy][x0 + ix] = (ix === 0 || ix === 15 || iy === 0 || iy === 13) ? '#' : ground;
+  const gy = r.row === 0 ? 13 : 0, ey = r.row === 0 ? 12 : 1, ey2 = r.row === 0 ? 11 : 2;
+  map[y0 + gy][x0 + 8] = 'G';
+  r.gate = { x: x0 + 8, y: y0 + gy };
+  r.entry = { x: x0 + 8, y: y0 + ey };
+  const scatter = (c, p, only) => { for (let iy = 1; iy <= 12; iy++) for (let ix = 1; ix <= 14; ix++) if (get(ix, iy) === (only || ground) && rnd() < p) set(ix, iy, c); };
+  const blob = (cx, cy, rad, c) => { for (let iy = 1; iy <= 12; iy++) for (let ix = 1; ix <= 14; ix++) if ((ix - cx) ** 2 + (iy - cy) ** 2 <= rad * rad) set(ix, iy, c); };
+  switch (r.id) {
+    case 'jardim':
+      scatter('*', .28);
+      for (const [iy, gaps] of [[4, [3, 11]], [8, [6, 13]]]) for (let ix = 1; ix <= 14; ix++) if (!gaps.includes(ix) && !gaps.includes(ix - 1)) set(ix, iy, 'T');
+      scatter('T', .04); break;
+    case 'torre':
+      for (let iy = 2; iy <= 11; iy += 3) for (let ix = 2; ix <= 14; ix += 3) set(ix, iy, 'T');
+      scatter('*', .05); break;
+    case 'porto':
+      for (let iy = 1; iy <= 3; iy++) for (let ix = 1; ix <= 14; ix++) set(ix, iy, '~');
+      for (const ix of [3, 8, 12]) for (let iy = 1; iy <= 3; iy++) set(ix, iy, 'B');
+      for (let iy = 5; iy <= 12; iy++) for (let ix = 1; ix <= 14; ix++) if (get(ix, iy) === ':' && rnd() < .1) set(ix, iy, 'C');
+      break;
+    case 'pico':
+      blob(11, 4, 1.5, '~'); scatter('T', .12); scatter('R', .07); break;
+    case 'mata':
+      scatter('T', .22); scatter('*', .05); break;
+    case 'lagoa':
+      blob(4, 5, 1.7, '~'); blob(11, 7, 1.7, '~'); blob(6, 11, 1.4, '~'); scatter(',', .12); scatter('T', .04); break;
+    case 'usina':
+      for (const iy of [4, 7, 10]) { const g1 = 1 + Math.floor(rnd() * 6), g2 = 8 + Math.floor(rnd() * 6); for (let ix = 1; ix <= 14; ix++) if (ix !== g1 && ix !== g2) set(ix, iy, '='); }
+      scatter('T', .05); scatter('C', .04); break;
+    case 'ilhas':
+      for (let iy = 1; iy <= 12; iy++) for (let ix = 1; ix <= 14; ix++) set(ix, iy, '~');
+      for (let iy = 1; iy <= 4; iy++) for (let ix = 5; ix <= 11; ix++) if (!((iy === 4) && (ix === 5 || ix === 11))) set(ix, iy, '.');
+      for (const [a, b] of [[1, 6], [9, 14]]) for (let iy = 7; iy <= 12; iy++) for (let ix = a; ix <= b; ix++) if (!((iy === 7 || iy === 12) && (ix === a || ix === b))) set(ix, iy, '.');
+      for (let iy = 5; iy <= 9; iy++) set(8, iy, 'B');
+      set(7, 9, 'B'); set(9, 9, 'B');
+      for (const [ix, iy] of [[6, 2], [10, 1], [2, 8], [13, 11], [5, 12], [10, 8]]) set(ix, iy, 'T');
+      for (const [ix, iy] of [[7, 3], [3, 10], [12, 9], [9, 2]]) set(ix, iy, '*');
+      break;
+  }
+  // entrada sempre livre
+  for (const [ix, iy] of [[8, ey], [8, ey2], [7, ey], [9, ey]]) if (get(ix, iy) !== 'B') set(ix, iy, r.id === 'ilhas' ? '.' : ground);
+
+  const inside = (x, y) => x > x0 && x < x0 + 15 && y > y0 && y < y0 + 13;
+  const occ = new Set();
+  let dist = bfs(r.entry.x, r.entry.y, inside, (x, y) => TD[map[y][x]].solid || occ.has(x + ',' + y));
+  let best = null, bd = -1;
+  for (const [k, d] of dist) { if (d > bd || (d === bd && rnd() < .3)) { const [x, y] = k.split(',').map(Number); if (map[y][x] === 'B') continue; bd = d; best = { x, y }; } }
+  r.guard = best; occ.add(best.x + ',' + best.y);
+  dist = bfs(r.entry.x, r.entry.y, inside, (x, y) => TD[map[y][x]].solid || occ.has(x + ',' + y));
+  const cells = [...dist].filter(([, d]) => d >= 4).map(([k]) => k.split(',').map(Number)).filter(([x, y]) => map[y][x] !== 'B');
+  for (let i = cells.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [cells[i], cells[j]] = [cells[j], cells[i]]; }
+  const picks = [];
+  const far = (x, y) => picks.every(p => Math.abs(p.x - x) + Math.abs(p.y - y) >= 4);
+  if (r.obj === 'focos') {
+    for (const [x, y] of cells) {
+      if (picks.length >= 3) break;
+      const open = DIRS.filter(([dx, dy]) => !TD[map[y + dy][x + dx]].solid).length;
+      if (open < 3 || !far(x, y)) continue;
+      occ.add(x + ',' + y);
+      const d2 = bfs(r.entry.x, r.entry.y, inside, (a, b) => TD[map[b][a]].solid || occ.has(a + ',' + b));
+      const reach = p => DIRS.some(([dx, dy]) => d2.has((p.x + dx) + ',' + (p.y + dy)));
+      if (reach(r.guard) && picks.every(reach) && reach({ x, y })) picks.push({ x, y }); else occ.delete(x + ',' + y);
+    }
+    r.buckets = picks; r.germs = [];
+  } else {
+    for (const [x, y] of cells) { if (picks.length >= 3) break; if (far(x, y)) picks.push({ x, y }); }
+    r.germs = picks; r.buckets = [];
+  }
+  r.speed = (r.id === 'pico' || r.id === 'ilhas' || r.id === 'mata') ? 1.15 : 1;
+}
+genVila();
+REGIONS.forEach(genRegion);
+
+/* ================= GRÁFICOS ================= */
+const cv = $('cv'), ctx = cv.getContext('2d');
+let SC = 3, VW = 200, VH = 150;
+const cache = new Map();
+function cached(key, w, hh, draw) {
+  let c = cache.get(key); if (c) return c;
+  c = document.createElement('canvas'); c.width = w; c.height = hh;
+  const g = c.getContext('2d'); g.imageSmoothingEnabled = false; draw(g); cache.set(key, c); return c;
+}
+const R = (g, x, y, w, hh, col) => { g.fillStyle = col; g.fillRect(x, y, w, hh); };
+function circ(g, cx, cy, r, col) { g.fillStyle = col; for (let y = Math.floor(cy - r); y <= cy + r; y++) for (let x = Math.floor(cx - r); x <= cx + r; x++) if ((x + .5 - cx) ** 2 + (y + .5 - cy) ** 2 <= r * r) g.fillRect(x, y, 1, 1); }
+function dots(g, rnd, n, col, w = 1, hh = 1) { for (let i = 0; i < n; i++) R(g, Math.floor(rnd() * (16 - w)), Math.floor(rnd() * (16 - hh)), w, hh, col); }
+
+function drawGround(g, th, style, v) {
+  const rnd = mulberry(v * 31 + 7), c = th.g;
+  switch (style) {
+    case 'grass': R(g, 0, 0, 16, 16, c[1]); for (let i = 0; i < 4; i++) { const x = Math.floor(rnd() * 13), y = 2 + Math.floor(rnd() * 12); R(g, x, y, 1, 2, c[2]); R(g, x + 2, y, 1, 2, c[2]); R(g, x + 1, y - 1, 1, 2, c[2]); } dots(g, rnd, 3, c[0]); break;
+    case 'snow': R(g, 0, 0, 16, 16, c[0]); dots(g, rnd, 4, c[1], 2, 1); dots(g, rnd, 2, c[2]); break;
+    case 'sand': R(g, 0, 0, 16, 16, c[0]); dots(g, rnd, 6, c[1]); dots(g, rnd, 2, c[2]); break;
+    case 'tiles': R(g, 0, 0, 16, 16, c[1]); R(g, 0, 0, 16, 1, c[0]); R(g, 0, 0, 1, 16, c[0]); R(g, 0, 15, 16, 1, c[2]); R(g, 15, 0, 1, 16, c[2]); R(g, 7, 7, 2, 2, c[0]); break;
+    case 'planks': R(g, 0, 0, 16, 16, c[1]); for (const y of [0, 4, 8, 12]) { R(g, 0, y + 3, 16, 1, c[2]); R(g, 0, y, 16, 1, c[0]); R(g, ((y * 5 + v * 3) % 12) + 2, y, 1, 3, c[2]); } break;
+    case 'metal': R(g, 0, 0, 16, 16, c[1]); R(g, 0, 0, 16, 1, c[0]); R(g, 0, 0, 1, 16, c[0]); R(g, 0, 15, 16, 1, c[2]); R(g, 15, 0, 1, 16, c[2]); for (const [x, y] of [[2, 2], [13, 2], [2, 13], [13, 13]]) R(g, x, y, 1, 1, c[2]); break;
+    case 'path': R(g, 0, 0, 16, 16, th.path[0]); dots(g, rnd, 5, th.path[1], 2, 1); dots(g, rnd, 2, shade(th.path[0], .4)); break;
+  }
+}
+function drawWater(g, th, f) {
+  R(g, 0, 0, 16, 16, th.water[0]);
+  for (const [x, y] of [[2, 3], [9, 7], [4, 12]]) { const xx = (x + f * 3) % 16; R(g, xx, y, 4, 1, th.water[1]); R(g, (xx + 1) % 16, y - 1, 2, 1, '#ffffff'); }
+}
+function drawWall(g, th) {
+  const w = th.wall; R(g, 0, 0, 16, 16, w[0]);
+  for (let y = 0; y < 16; y += 5) { R(g, 0, y + 4, 16, 1, w[1]); const off = (y / 5) % 2 ? 4 : 10; R(g, off, y, 1, 4, w[1]); R(g, (off + 8) % 16, y, 1, 4, w[1]); }
+  R(g, 0, 0, 16, 1, w[2]);
+}
+function shadow(g, cx = 8, w = 10) { g.fillStyle = 'rgba(0,0,0,.2)'; g.fillRect(cx - w / 2, 13, w, 2); g.fillRect(cx - w / 2 + 1, 15, w - 2, 1); }
+function drawOver(g, th, o, v, x, y) {
+  const rnd = mulberry(v * 13 + 3);
+  switch (o) {
+    case 'tree': {
+      const L = th.leaf;
+      if (th.tree === 'pine') { shadow(g); R(g, 7, 12, 2, 3, th.trunk); for (let i = 0; i < 4; i++) { const w = 4 + i * 3, y = 1 + i * 3; R(g, 8 - w / 2 - 1, y, w + 2, 4, K); R(g, 8 - w / 2, y + 1, w, 2, i % 2 ? L[1] : L[0]); } R(g, 6, 2, 1, 1, '#ffffff'); R(g, 4, 8, 2, 1, '#ffffff'); }
+      else if (th.tree === 'palm') { shadow(g, 9, 8); R(g, 7, 6, 3, 9, K); R(g, 8, 7, 1, 8, th.trunk); circ(g, 8, 5, 5.2, K); for (const [dx, dy] of [[-4, 1], [4, 1], [0, -3], [-3, -2], [3, -2]]) circ(g, 8 + dx * .8, 5 + dy * .8, 2.6, L[0]); R(g, 7, 5, 2, 2, '#8a5a32'); }
+      else if (th.tree === 'neuron') { shadow(g); R(g, 6, 6, 4, 9, K); R(g, 7, 7, 2, 7, L[1]); circ(g, 8, 5, 4.5, K); circ(g, 8, 5, 3.5, th.acc[0]); R(g, 7, 3, 2, 1, '#ffffff'); R(g, 3, 9, 3, 1, L[0]); R(g, 10, 11, 3, 1, L[0]); }
+      else if (th.tree === 'tank') { shadow(g, 8, 12); R(g, 2, 3, 12, 12, K); R(g, 3, 4, 10, 10, L[0]); R(g, 3, 4, 10, 2, shade(L[0], .3)); R(g, 3, 9, 10, 1, L[1]); R(g, 5, 1, 6, 3, K); R(g, 6, 2, 4, 2, '#8a7c6e'); R(g, 11, 6, 1, 6, shade(L[0], .25)); }
+      else if (th.tree === 'hedge') { shadow(g, 8, 14); R(g, 1, 3, 14, 12, K); R(g, 2, 4, 12, 10, L[0]); R(g, 2, 11, 12, 3, L[1]); for (let i = 0; i < 3; i++) { const fx = 3 + Math.floor(rnd() * 9), fy = 5 + Math.floor(rnd() * 5); R(g, fx, fy, 2, 2, th.acc[0]); R(g, fx, fy, 1, 1, th.acc[1]); } }
+      else { const big = th.tree === 'jungle'; shadow(g, 8, 12); R(g, 6, 10, 4, 6, K); R(g, 7, 10, 2, 5, th.trunk); circ(g, 8, 7, big ? 7.5 : 6.8, K); circ(g, 8, 7, big ? 6.5 : 5.8, L[1]); circ(g, 7, 6, big ? 5 : 4.3, L[0]); R(g, 5, 4, 2, 1, shade(L[0], .35)); if (big) { R(g, 3, 9, 1, 5, L[1]); R(g, 12, 9, 1, 4, L[1]); R(g, 10, 5, 2, 2, th.acc[0]); } }
+      break;
+    }
+    case 'rock': shadow(g, 8, 12); circ(g, 8, 9, 6, K); circ(g, 8, 9, 5, '#9aa3b5'); circ(g, 7, 8, 3.5, '#b9c1d0'); R(g, 6, 6, 2, 1, '#e3e8f0'); break;
+    case 'crate': shadow(g, 8, 14); R(g, 1, 2, 14, 13, K); R(g, 2, 3, 12, 11, '#c08a4a'); R(g, 2, 3, 12, 1, '#dcaa6a'); R(g, 2, 8, 12, 1, '#8a5a2a'); R(g, 7, 3, 1, 11, '#8a5a2a'); break;
+    case 'pipe': R(g, 0, 4, 16, 9, K); R(g, 0, 5, 16, 7, th.acc[0]); R(g, 0, 6, 16, 2, shade(th.acc[0], .4)); R(g, 0, 10, 16, 2, shade(th.acc[0], -.25)); R(g, 6, 3, 3, 11, K); R(g, 7, 4, 1, 9, '#d9d9d9'); break;
+    case 'flower': for (let i = 0; i < 3; i++) { const fx = 1 + Math.floor(rnd() * 12), fy = 2 + Math.floor(rnd() * 11); R(g, fx + 1, fy + 2, 1, 2, th.leaf[1]); R(g, fx, fy, 3, 3, th.acc[i % 2]); R(g, fx + 1, fy + 1, 1, 1, '#ffe66d'); } break;
+    case 'reed': for (let i = 0; i < 3; i++) { const fx = 2 + i * 4 + Math.floor(rnd() * 2), hh = 6 + Math.floor(rnd() * 5); R(g, fx, 15 - hh, 1, hh, th.leaf[0]); R(g, fx, 15 - hh - 2, 1, 3, '#7a4e2d'); } break;
+    case 'sign': shadow(g, 8, 8); R(g, 7, 8, 2, 7, K); R(g, 1, 2, 14, 8, K); R(g, 2, 3, 12, 6, '#c69a69'); R(g, 4, 5, 8, 1, '#7a5432'); R(g, 4, 7, 6, 1, '#7a5432'); break;
+  }
+}
+function tileImg(x, y) {
+  const c = map[y][x], d = TD[c], tk = themeKey(x, y), th = THEMES[tk];
+  const v = hash(x, y) % 4;
+  let key = tk + c + v, extra = '';
+  if (d.water) extra = '' + (Math.floor(frame / 40) % 2);
+  if (d.gate) extra = isOpen(regAt(x, y)) ? 'o' : 'l';
+  return cached(key + extra, 16, 16, g => {
+    const style = th.ground;
+    if (d.water) { drawWater(g, th, +extra); return; }
+    if (d.wall) { drawWall(g, th); return; }
+    if (d.bridge) { drawWater(g, th, 0); R(g, 1, 0, 14, 16, K); R(g, 2, 0, 12, 16, '#c69a69'); for (let yy = 0; yy < 16; yy += 4) R(g, 2, yy + 3, 12, 1, '#8a5a32'); return; }
+    if (d.gate) {
+      const r = regAt(x, y), rt = THEMES[r.id];
+      drawGround(g, THEMES.vila, 'path', v);
+      R(g, 0, 0, 3, 16, K); R(g, 13, 0, 3, 16, K); R(g, 1, 0, 1, 16, rt.wall[0]); R(g, 14, 0, 1, 16, rt.wall[0]);
+      if (extra === 'l') {
+        for (let i = 3; i < 13; i += 3) R(g, i, 0, 2, 16, K);
+        for (let i = 3; i < 13; i += 3) R(g, i + 1, 0, 1, 16, rt.wall[2]);
+        R(g, 3, 6, 10, 2, K);
+        R(g, 5, 8, 6, 6, K); R(g, 6, 9, 4, 4, '#ffcf3f'); R(g, 7, 10, 2, 2, K); R(g, 6, 5, 4, 1, K); R(g, 5, 5, 1, 3, K); R(g, 10, 5, 1, 3, K);
+      } else { R(g, 3, 0, 10, 1, rt.ui); R(g, 3, 15, 10, 1, rt.ui); }
+      return;
+    }
+    if (d.path || c === 'D') drawGround(g, th, 'path', v); else drawGround(g, th, style, v);
+    if (d.o) drawOver(g, th, d.o, v, x, y);
+  });
+}
+
+function person(look, dir, step) {
+  return cached('p' + JSON.stringify(look) + dir + step, 16, 16, g => {
+    if (dir === 'L') { g.translate(16, 0); g.scale(-1, 1); g.drawImage(person(look, 'R', step), 0, 0); return; }
+    const r = (x, y, w, hh, c) => R(g, x, y, w, hh, c);
+    g.fillStyle = 'rgba(0,0,0,.22)'; g.fillRect(4, 14, 8, 2);
+    if (look.cape) { r(2, 7, 12, 8, K); r(3, 8, 10, 6, look.cape); }
+    const lh = step === 1 ? 2 : 3, rh = step === 2 ? 2 : 3;
+    r(4, 11, 4, lh + 2, K); r(8, 11, 4, rh + 2, K);
+    r(5, 11, 2, lh, look.pants); r(5, 11 + lh, 2, 1, look.shoe);
+    r(9, 11, 2, rh, look.pants); r(9, 11 + rh, 2, 1, look.shoe);
+    r(3, 7, 10, 6, K); r(4, 8, 8, 4, look.shirt); r(4, 11, 8, 1, shade(look.shirt, -.2));
+    if (dir !== 'U') { r(3, 9, 1, 2, look.skin); r(12, 9, 1, 2, look.skin); }
+    if (look.cape && dir === 'U') r(3, 8, 10, 5, look.cape);
+    r(3, 1, 10, 8, K); r(4, 2, 8, 6, look.skin);
+    if (dir === 'U') { r(4, 2, 8, 6, look.hair); if (look.long) r(4, 7, 8, 1, look.hair); }
+    else if (dir === 'D') {
+      r(4, 2, 8, 2, look.hair); r(4, 4, 1, look.long ? 4 : 2, look.hair); r(11, 4, 1, look.long ? 4 : 2, look.hair);
+      r(6, 5, 1, 2, K); r(9, 5, 1, 2, K); r(5, 7, 1, 1, '#ff9a9a'); r(10, 7, 1, 1, '#ff9a9a');
+    } else {
+      r(4, 2, 8, 2, look.hair); r(4, 4, 3, look.long ? 4 : 3, look.hair); r(10, 5, 1, 2, K); r(10, 7, 1, 1, '#ff9a9a');
+    }
+    if (look.cap) { r(3, 0, 10, 3, K); r(4, 1, 8, 2, look.cap); if (dir === 'D') r(4, 3, 8, 1, shade(look.cap, -.3)); if (dir === 'R') { r(11, 2, 3, 2, K); r(11, 2, 2, 1, shade(look.cap, -.3)); } }
+    if (look.hat) { r(4, 0, 8, 3, K); r(5, 1, 6, 1, look.hat); r(7, 0, 2, 3, '#1fa39a'); r(6, 1, 4, 1, '#1fa39a'); }
+  });
+}
+function germImg(col, f) {
+  return cached('g' + col + f, 16, 16, g => {
+    g.fillStyle = 'rgba(0,0,0,.2)'; g.fillRect(4, 14, 8, 2);
+    for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4 + (f ? Math.PI / 8 : 0); const sx = Math.round(7.5 + Math.cos(a) * 6.5), sy = Math.round(7.5 + Math.sin(a) * 6.5); R(g, sx - 1, sy - 1, 3, 3, K); R(g, sx, sy, 1, 1, col); }
+    circ(g, 8, 8, 5.6, K); circ(g, 8, 8, 4.6, col); circ(g, 7, 7, 2, shade(col, .3));
+    R(g, 5, 6, 2, 3, '#fff'); R(g, 9, 6, 2, 3, '#fff'); R(g, 6, 7, 1, 2, K); R(g, 9, 7, 1, 2, K);
+    R(g, 4, 5, 3, 1, K); R(g, 9, 5, 3, 1, K); R(g, 6, 10, 4, 1, K); R(g, 7, 11, 1, 1, '#fff');
+  });
+}
+function potImg(full) {
+  return cached('pot' + full, 16, 16, g => {
+    g.fillStyle = 'rgba(0,0,0,.2)'; g.fillRect(3, 14, 10, 2);
+    if (full) { R(g, 3, 5, 10, 10, K); R(g, 4, 7, 8, 7, '#c8693a'); R(g, 4, 7, 8, 1, '#e08a52'); R(g, 2, 4, 12, 3, K); R(g, 3, 5, 10, 1, '#5cc7c0'); R(g, 5, 5, 2, 1, '#ffffff'); R(g, 8, 2, 1, 2, K); R(g, 10, 1, 1, 2, K); }
+    else { R(g, 2, 8, 12, 7, K); R(g, 3, 9, 10, 5, '#c8693a'); R(g, 3, 9, 10, 1, '#e08a52'); R(g, 12, 9, 1, 5, '#5a2f1a'); }
+  });
+}
+function shieldImg(r, size = 16) {
+  return cached('sh' + (r ? r.id : 'none') + size, 16, 16, g => {
+    const col = r ? THEMES[r.id].ui : '#9a9a9a';
+    R(g, 2, 1, 12, 9, K); R(g, 3, 10, 10, 2, K); R(g, 4, 12, 8, 2, K); R(g, 6, 14, 4, 1, K);
+    R(g, 3, 2, 10, 8, col); R(g, 4, 10, 8, 2, col); R(g, 5, 12, 6, 1, col); R(g, 3, 2, 10, 2, shade(col, .3));
+    R(g, 7, 4, 2, 7, '#fff'); R(g, 5, 6, 6, 2, '#fff');
+  });
+}
+function houseImg(hs, lit) {
+  return cached('h' + hs.roof + lit, 32, 32, g => {
+    g.fillStyle = 'rgba(0,0,0,.22)'; g.fillRect(2, 29, 30, 3);
+    R(g, 2, 13, 28, 18, K); R(g, 3, 14, 26, 16, '#f3e6c8'); R(g, 3, 27, 26, 3, '#d9c8a4');
+    for (let row = 0; row < 12; row++) { const inset = Math.max(0, 11 - row); R(g, inset, 2 + row, 32 - inset * 2, 1, K); if (row > 0) R(g, inset + 1, 2 + row, 30 - inset * 2, 1, row % 3 === 0 ? shade(hs.roof, -.2) : hs.roof); }
+    R(g, 0, 13, 32, 2, K); R(g, 1, 13, 30, 1, shade(hs.roof, -.3));
+    R(g, 5, 17, 9, 8, K); R(g, 6, 18, 7, 6, lit ? '#ffe27a' : '#3a4a6a'); R(g, 9, 18, 1, 6, K); R(g, 6, 21, 7, 1, K);
+    if (lit) { R(g, 7, 19, 1, 1, '#fff'); }
+    R(g, 19, 18, 8, 12, K); R(g, 20, 19, 6, 11, '#8a5a32'); R(g, 24, 24, 1, 1, '#ffcf3f');
+    R(g, 24, 3, 4, 7, K); R(g, 25, 4, 2, 5, '#b9a38a');
+  });
+}
+function ubsImg() {
+  return cached('ubs', 48, 32, g => {
+    g.fillStyle = 'rgba(0,0,0,.22)'; g.fillRect(2, 29, 46, 3);
+    R(g, 1, 6, 46, 25, K); R(g, 2, 7, 44, 23, '#ffffff'); R(g, 2, 26, 44, 4, '#dfe8ec');
+    R(g, 0, 3, 48, 6, K); R(g, 1, 4, 46, 4, '#1fa39a'); R(g, 1, 4, 46, 1, '#5fd3c8');
+    R(g, 17, 0, 14, 13, K); R(g, 18, 1, 12, 11, '#ffffff'); R(g, 22, 2, 4, 9, '#1fa39a'); R(g, 19, 5, 10, 3, '#1fa39a');
+    for (const x of [5, 35]) { R(g, x, 13, 9, 8, K); R(g, x + 1, 14, 7, 6, '#a9dcf5'); R(g, x + 1, 14, 2, 2, '#ffffff'); }
+    R(g, 17, 15, 14, 16, K); R(g, 18, 16, 12, 15, '#a9dcf5'); R(g, 23, 16, 2, 15, K); R(g, 19, 17, 2, 3, '#ffffff');
+  });
+}
+
+/* ================= ENTIDADES ================= */
+const npcs = [
+  { id: 'ana', x: 33, y: 17, look: LOOK.ana, dir: 'L', name: 'Enfermeira Ana' },
+  { id: 'vovo', x: 15, y: 16, look: LOOK.vovo, dir: 'D', name: 'Vovó Dita' },
+  { id: 'leo', x: 43, y: 16, look: LOOK.leo, dir: 'D', name: 'Léo' },
+  { id: 'bia', x: 54, y: 19, look: LOOK.bia, dir: 'D', name: 'Bia' },
+  { id: 'caio', x: 27, y: 19, look: LOOK.caio, dir: 'D', name: 'Agente Caio' },
+  { id: 'ze', x: 6, y: 19, look: LOOK.ze, dir: 'D', name: 'Seu Zé' },
+];
+REGIONS.forEach(r => npcs.push({ id: 'g-' + r.id, x: r.guard.x, y: r.guard.y, look: r.look, dir: r.row === 0 ? 'D' : 'U', name: r.gname, region: r }));
+let germs = [], pots = [], poofs = [];
+function spawnEntities() {
+  germs = []; pots = [];
+  REGIONS.forEach(r => {
+    const got = progOf(r);
+    r.germs.forEach((p, i) => { if (!got.includes(i)) germs.push({ r, i, x: p.x, y: p.y, px: p.x * T, py: p.y * T, tx: p.x, ty: p.y, moving: false, idle: 30 + i * 20 }); });
+    r.buckets.forEach((p, i) => pots.push({ r, i, x: p.x, y: p.y, full: !got.includes(i) }));
+  });
+}
+const npcAt = (x, y) => npcs.find(n => n.x === x && n.y === y);
+const potAt = (x, y) => pots.find(p => p.x === x && p.y === y);
+const P = { x: 32, y: 17, px: 32 * T, py: 17 * T, dir: 'R', moving: false, tx: 0, ty: 0 };
+const canWalk = (x, y) => !tileSolid(x, y) && !npcAt(x, y) && !potAt(x, y);
+
+/* ================= ÁUDIO ================= */
+const AU = {
+  ctx: null,
+  init() { if (this.ctx) { if (this.ctx.state === 'suspended') this.ctx.resume(); return; } try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} },
+  tone(f, d, t = 'square', v = .045, when = 0) {
+    if (!soundOn || !this.ctx) return;
+    const c = this.ctx, o = c.createOscillator(), g = c.createGain(), s = c.currentTime + when;
+    o.type = t; o.frequency.value = f; g.gain.setValueAtTime(v, s); g.gain.exponentialRampToValueAtTime(.0001, s + d);
+    o.connect(g).connect(c.destination); o.start(s); o.stop(s + d + .02);
+  },
+  seq(ns, st = .09, t, v) { ns.forEach((f, i) => f && this.tone(f, st * 1.15, t, v, i * st)); },
+  blip() { this.tone(900, .025, 'square', .015); }, move() { this.tone(660, .04, 'square', .03); }, ok() { this.seq([660, 990], .06); },
+  no() { this.seq([260, 180], .09); }, bump() { this.tone(120, .06, 'square', .035); },
+  catch() { this.seq([523, 659, 784, 1047], .05); }, splash() { this.seq([300, 500, 800], .04, 'triangle', .06); },
+  unlock() { this.seq([523, 659, 784, 1047, 0, 784, 1047, 1319], .1, 'square', .05); }, nfc() { this.seq([1320, 0, 1320, 0, 1760], .07, 'sine', .07); },
+  stamp() { this.tone(90, .12, 'triangle', .12); this.tone(180, .05, 'square', .04); },
+};
+
+/* ================= CAMADAS DE UI ================= */
+const uiRoot = $('ui');
+const stack = [];
+let busy = 0;
+function push(L) { stack.push(L); if (L.el) uiRoot.append(L.el); refreshHud(); }
+function pop(L) { const i = stack.indexOf(L); if (i >= 0) stack.splice(i, 1); if (L.el) L.el.remove(); refreshHud(); }
+async function flow(fn) { if (busy) return; busy++; try { await fn(); } catch (e) { console.error(e); } finally { busy--; save(); refreshHud(); } }
+
+function portrait(look) { const c = h('canvas', { width: 16, height: 16, class: 'px' }); const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(person(look, 'D', 0), 0, 0); return c; }
+function spr(img, cls) { const c = h('canvas', { width: img.width, height: img.height, class: 'px ' + (cls || '') }); const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(img, 0, 0); return c; }
+
+function say(lines, who) {
+  return new Promise(res => {
+    lines = [].concat(lines);
+    const tx = h('div', { class: 'tx' }), nx = h('i', { class: 'nx' });
+    const color = who && who.color ? `--ui:${who.color}` : '';
+    const el = h('div', { class: 'dlg', style: color, role: 'dialog' },
+      who && who.look ? h('div', { class: 'por' }, portrait(who.look)) : null,
+      h('div', { class: 'bd' }, who ? h('div', { class: 'who' }, who.name.toUpperCase()) : null, tx), nx);
+    let i = 0, timer = null, full = '';
+    const strip = s => s.replace(/<[^>]+>/g, '');
+    function show() {
+      full = lines[i]; const plain = strip(full); let n = 0; nx.hidden = true; live(plain);
+      clearInterval(timer);
+      if (RM) { tx.innerHTML = full; nx.hidden = false; return; }
+      timer = setInterval(() => { n += 2; tx.textContent = plain.slice(0, n); if (n % 4 === 0) AU.blip(); if (n >= plain.length) { clearInterval(timer); timer = null; tx.innerHTML = full; nx.hidden = false; } }, 24);
+    }
+    const L = { el, key(k) {
+      if (k !== 'A' && k !== 'B') return;
+      if (timer) { clearInterval(timer); timer = null; tx.innerHTML = full; nx.hidden = false; return; }
+      i++; if (i >= lines.length) { pop(L); res(); } else show();
+    } };
+    el.addEventListener('pointerdown', e => { e.stopPropagation(); L.key('A'); });
+    push(L); show();
+  });
+}
+function choose(q, opts, o = {}) {
+  return new Promise(res => {
+    let sel = o.sel || 0;
+    const items = opts.map((t, i) => h('div', { class: 'opt', role: 'button' }, t));
+    items.forEach((it, i) => it.addEventListener('pointerdown', e => { e.stopPropagation(); sel = i; paint(); AU.ok(); done(i); }));
+    const color = o.who && o.who.color ? `--ui:${o.who.color}` : '';
+    const el = h('div', { class: 'dlg', style: color + ';cursor:default' },
+      o.who && o.who.look ? h('div', { class: 'por' }, portrait(o.who.look)) : null,
+      h('div', { class: 'bd' }, o.who ? h('div', { class: 'who' }, o.who.name.toUpperCase()) : null, q ? h('div', { class: 'tx', style: 'min-height:0' }, q) : null, h('div', { class: 'opts' }, items)));
+    el.addEventListener('pointerdown', e => e.stopPropagation());
+    function paint() { items.forEach((it, i) => it.classList.toggle('sel', i === sel)); }
+    function done(v) { pop(L); res(v); }
+    const L = { el, key(k) {
+      if (k === 'UP') { sel = (sel + opts.length - 1) % opts.length; paint(); AU.move(); }
+      else if (k === 'DOWN') { sel = (sel + 1) % opts.length; paint(); AU.move(); }
+      else if (k === 'A') { AU.ok(); done(sel); }
+      else if (k === 'B' && o.cancel !== false) { AU.no(); done(-1); }
+    } };
+    live((q || '') + ' Opções: ' + opts.join('; '));
+    push(L); paint();
+  });
+}
+// cartão em tela cheia; resolve com A/B ou com o botão
+function overlay(card, o = {}) {
+  return new Promise(res => {
+    const ov = h('div', { class: 'ov' }, card);
+    const L = { el: ov, key(k) { if (o.keys) return o.keys(k, close); if (k === 'A' || k === 'B') { AU.ok(); close(k); } } };
+    function close(v) { pop(L); res(v); }
+    L.close = close;
+    if (o.onMount) o.onMount(L);
+    push(L);
+  });
+}
+
+/* ================= HUD ================= */
+let toastT = null;
+function toast(msg, ms = 2400) {
+  const old = document.querySelector('.toast'); if (old) old.remove();
+  const t = h('div', { class: 'toast chip' }, msg); $('hud').append(t); live(msg);
+  clearTimeout(toastT); toastT = setTimeout(() => t.remove(), ms);
+}
+function banner(top, name, color) {
+  const old = document.querySelector('.banner'); if (old) old.remove();
+  const b = h('div', { class: 'banner', style: `background:${color}` }, h('small', {}, top), h('b', {}, name)); $('hud').append(b);
+  setTimeout(() => b.remove(), 2700);
+}
+let curReg = undefined;
+function refreshHud() {
+  const playing = S.started && !document.querySelector('.ov') && !titleOn;
+  $('hud').classList.toggle('hide', !playing);
+  const r = regAt(P.x, P.y);
+  const th = THEMES[r ? r.id : 'vila'];
+  document.documentElement.style.setProperty('--ui', th.ui);
+  $('hudReg').textContent = r ? r.name.toUpperCase() : 'VILA IMUNE';
+  let obj = '';
+  if (r) {
+    if (S.ins[r.id]) obj = 'Insígnia conquistada!';
+    else if (objDone(r)) obj = 'Fale com ' + r.gname + '!';
+    else obj = r.obj === 'focos' ? `Focos de água: ${progOf(r).length}/${objTotal(r)}` : `Germes neutralizados: ${progOf(r).length}/${objTotal(r)}`;
+  } else {
+    const open = REGIONS.filter(isOpen).length;
+    obj = `Áreas abertas: ${open}/8 · Proteção: ${Math.round(insCount() / 8 * 100)}%`;
+  }
+  $('hudObj').textContent = obj;
+  const ins = $('hudIns'); ins.replaceChildren(spr(shieldImg(REGIONS[0])), insCount() + '/8');
+  ins.querySelector('canvas').style.cssText = 'width:20px;height:20px';
+}
+
+/* ================= ENTRADA ================= */
+const held = [];
+let freshPress = false;
+const KEYMAP = { ArrowUp: 'UP', ArrowDown: 'DOWN', ArrowLeft: 'LEFT', ArrowRight: 'RIGHT', w: 'UP', s: 'DOWN', a: 'LEFT', d: 'RIGHT', W: 'UP', S: 'DOWN', A: 'LEFT', D: 'RIGHT',
+  z: 'A', Z: 'A', Enter: 'A', ' ': 'A', e: 'A', E: 'A', x: 'B', X: 'B', Escape: 'B', Backspace: 'B', c: 'BOOK', C: 'BOOK', m: 'MAP', M: 'MAP', p: 'MENU', P: 'MENU', Tab: 'MENU' };
+const isDir = k => k === 'UP' || k === 'DOWN' || k === 'LEFT' || k === 'RIGHT';
+function dispatch(k) {
+  AU.init();
+  const top = stack[stack.length - 1];
+  if (top) { if (top.key) top.key(k); return; }
+  if (busy || titleOn) return;
+  worldKey(k);
+}
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.target && e.target.tagName === 'INPUT') return; // digitando um código
+  const k = KEYMAP[e.key]; if (!k) return;
+  e.preventDefault();
+  if (isDir(k)) { if (!held.includes(k)) { held.push(k); freshPress = true; } }
+  if (e.repeat && !isDir(k)) return;
+  dispatch(k);
+});
+document.addEventListener('keyup', e => { const k = KEYMAP[e.key]; const i = held.indexOf(k); if (i >= 0) held.splice(i, 1); });
+addEventListener('blur', () => { held.length = 0; });
+
+// D-pad físico do console: toque e arraste o dedo para trocar de direção
+const dpad = $('dpad');
+let padId = null;
+const buzz = () => { if (navigator.vibrate) try { navigator.vibrate(10); } catch (err) {} };
+function setHeldDir(d) {
+  dpad.className = 'dpad' + (d ? ' p-' + d : '');
+  if (held.length === 1 && held[0] === d) return;
+  held.length = 0; if (d) { held.push(d); freshPress = true; buzz(); dispatch(d); }
+}
+function padDir(e) {
+  const r = dpad.getBoundingClientRect(), dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
+  if (Math.hypot(dx, dy) < r.width * .1) return null;
+  return Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'RIGHT' : 'LEFT') : (dy > 0 ? 'DOWN' : 'UP');
+}
+dpad.addEventListener('pointerdown', e => { e.preventDefault(); AU.init(); padId = e.pointerId; try { dpad.setPointerCapture(e.pointerId); } catch (err) {} setHeldDir(padDir(e)); });
+dpad.addEventListener('pointermove', e => { if (e.pointerId === padId) setHeldDir(padDir(e)); });
+const padEnd = e => { if (e.pointerId !== padId) return; padId = null; setHeldDir(null); };
+dpad.addEventListener('pointerup', padEnd); dpad.addEventListener('pointercancel', padEnd);
+document.querySelectorAll('.console [data-k]').forEach(b => b.addEventListener('pointerdown', e => {
+  e.preventDefault(); buzz(); b.classList.add('down'); setTimeout(() => b.classList.remove('down'), 130); dispatch(b.dataset.k);
+}));
+// teclado acende os botões do console também
+document.addEventListener('keydown', e => {
+  if (e.target && e.target.tagName === 'INPUT') return;
+  const k = KEYMAP[e.key]; if (!k || e.repeat) return;
+  const b = document.querySelector(`.console [data-k="${k}"]`); if (b) { b.classList.add('down'); setTimeout(() => b.classList.remove('down'), 130); }
+  if (isDir(k)) { dpad.className = 'dpad p-' + k; setTimeout(() => { if (padId === null) dpad.className = 'dpad'; }, 130); }
+});
+$('bBook').addEventListener('pointerdown', e => { e.stopPropagation(); dispatch('BOOK'); });
+$('bMap').addEventListener('pointerdown', e => { e.stopPropagation(); dispatch('MAP'); });
+
+/* ================= MUNDO ================= */
+const DV = { UP: [0, -1, 'U'], DOWN: [0, 1, 'D'], LEFT: [-1, 0, 'L'], RIGHT: [1, 0, 'R'] };
+const DIRV = { U: [0, -1], D: [0, 1], L: [-1, 0], R: [1, 0] };
+let frame = 0, bumpT = 0, camX = 0, camY = 0, titleOn = true;
+
+function worldKey(k) {
+  if (k === 'A') { const [dx, dy] = DIRV[P.dir]; interact(P.x + dx, P.y + dy); }
+  else if (k === 'BOOK') flow(caderneta);
+  else if (k === 'MAP') flow(mapa);
+  else if (k === 'MENU' || k === 'B') flow(menu);
+}
+function updatePlayer() {
+  const sp = 2;
+  if (P.moving) {
+    const tx = P.tx * T, ty = P.ty * T;
+    P.px += Math.sign(tx - P.px) * Math.min(sp, Math.abs(tx - P.px));
+    P.py += Math.sign(ty - P.py) * Math.min(sp, Math.abs(ty - P.py));
+    if (P.px === tx && P.py === ty) { P.moving = false; P.x = P.tx; P.y = P.ty; arrive(); }
+    else return;
+  }
+  const d = held[held.length - 1];
+  if (!d || busy || stack.length) return;
+  const [dx, dy, nd] = DV[d]; P.dir = nd;
+  const nx = P.x + dx, ny = P.y + dy;
+  if (canWalk(nx, ny)) { P.moving = true; P.tx = nx; P.ty = ny; }
+  else {
+    if (freshPress) { freshPress = false; if (bumpInteract(nx, ny)) return; }
+    if (bumpT <= 0) { AU.bump(); bumpT = 18; }
+  }
+}
+function arrive() {
+  const r = regAt(P.x, P.y);
+  if (r !== curReg) {
+    curReg = r;
+    if (r && map[P.y][P.x] !== 'G') {
+      banner('VACINA: ' + VAC[r.vac].curto.toUpperCase(), r.name.toUpperCase(), THEMES[r.id].ui); AU.seq([523, 784], .08);
+      if (!S.ins[r.id] && !S.met[r.id + '-tip']) { S.met[r.id + '-tip'] = 1; setTimeout(() => toast(r.obj === 'focos' ? 'Esvazie os 3 focos de água parada (A)!' : 'Encoste nos 3 germes para neutralizá-los!', 3200), 1400); }
+    } else if (!r) curReg = null;
+    refreshHud();
+  }
+  if (frame % 4 === 0) save();
+}
+function bumpInteract(x, y) {
+  if (!inMap(x, y)) return false;
+  const c = map[y][x];
+  if (c === 'G' && !isOpen(regAt(x, y))) { flow(() => gateInfo(regAt(x, y))); return true; }
+  if (c === 'D') { flow(ubsDoor); return true; }
+  return false;
+}
+function interact(x, y) {
+  if (!inMap(x, y)) return;
+  const n = npcAt(x, y);
+  if (n) { const back = { U: 'D', D: 'U', L: 'R', R: 'L' }[P.dir]; const prev = n.dir; n.dir = back; flow(async () => { await talk(n); n.dir = prev; }); return; }
+  const p = potAt(x, y);
+  if (p) { flow(() => emptyPot(p)); return; }
+  const c = map[y][x];
+  if (c === 'S') { flow(() => readSign(x, y)); return; }
+  if (c === 'G' && !isOpen(regAt(x, y))) { flow(() => gateInfo(regAt(x, y))); return; }
+  if (c === 'D') { flow(ubsDoor); return; }
+}
+
+function germFree(g, x, y) {
+  const r = g.r;
+  if (x <= r.x0 || x >= r.x0 + 15 || y <= r.y0 || y >= r.y0 + 13) return false;
+  if (TD[map[y][x]].solid || npcAt(x, y) || potAt(x, y)) return false;
+  return !germs.some(o => o !== g && ((o.x === x && o.y === y) || (o.tx === x && o.ty === y)));
+}
+function updateGerms() {
+  for (const g of germs) {
+    if (g.moving) {
+      const tx = g.tx * T, ty = g.ty * T, sp = g.r.speed;
+      g.px += Math.sign(tx - g.px) * Math.min(sp, Math.abs(tx - g.px));
+      g.py += Math.sign(ty - g.py) * Math.min(sp, Math.abs(ty - g.py));
+      if (g.px === tx && g.py === ty) { g.moving = false; g.x = g.tx; g.y = g.ty; }
+    } else if (g.idle > 0) g.idle--;
+    else {
+      const same = regAt(P.x, P.y) === g.r;
+      const dP = (x, y) => Math.abs(x - P.x) + Math.abs(y - P.y);
+      const opts = DIRS.map(([dx, dy]) => [g.x + dx, g.y + dy]).filter(([x, y]) => germFree(g, x, y));
+      if (!opts.length) { g.idle = 20; continue; }
+      let pick;
+      if (same && dP(g.x, g.y) <= 4 && Math.random() < .8) { opts.sort((a, b) => dP(b[0], b[1]) - dP(a[0], a[1])); pick = opts[0]; }
+      else { if (Math.random() < .35) { g.idle = 20 + Math.floor(Math.random() * 50); continue; } pick = opts[Math.floor(Math.random() * opts.length)]; }
+      g.tx = pick[0]; g.ty = pick[1]; g.moving = true;
+    }
+    if (Math.abs(g.px - P.px) < 11 && Math.abs(g.py - P.py) < 11) catchGerm(g);
+  }
+}
+function catchGerm(g) {
+  germs = germs.filter(o => o !== g);
+  const pr = progOf(g.r); if (!pr.includes(g.i)) pr.push(g.i);
+  poofs.push({ x: g.px + 8, y: g.py + 8, t: 0, col: THEMES[g.r.id].germ });
+  AU.catch(); save(); refreshHud();
+  if (objDone(g.r)) toast('Área limpa! Agora fale com ' + g.r.gname + '.', 3000);
+  else toast(`Germe neutralizado! ${pr.length}/${objTotal(g.r)}`, 1600);
+}
+
+/* ================= RENDER ================= */
+function render() {
+  ctx.fillStyle = '#1d1b2e'; ctx.fillRect(0, 0, VW, VH);
+  let tx = P.px + 8 - VW / 2, ty = P.py + 8 - VH / 2;
+  if (titleOn) { tx = 16 * T + Math.sin(frame / 400) * 14 * T - VW / 2; ty = 18 * T - VH / 2; }
+  const maxX = MW * T - VW, maxY = MH * T - VH;
+  camX = maxX > 0 ? clamp(tx, 0, maxX) : maxX / 2; camY = maxY > 0 ? clamp(ty, 0, maxY) : maxY / 2;
+  const cx = Math.round(camX), cy = Math.round(camY);
+  const x0 = Math.floor(cx / T), y0 = Math.floor(cy / T), x1 = Math.ceil((cx + VW) / T), y1 = Math.ceil((cy + VH) / T);
+  for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) { if (!inMap(x, y)) continue; ctx.drawImage(tileImg(x, y), x * T - cx, y * T - cy); }
+  const lit = Math.round(insCount() / 8 * houses.length);
+  const draws = [];
+  houses.forEach(hs => draws.push({ y: hs.y + 1, f: () => ctx.drawImage(houseImg(hs, ((hs.idx * 5) % houses.length) < lit), hs.x * T - cx, hs.y * T - cy) }));
+  buildings.forEach(b => draws.push({ y: b.y + 1, f: () => ctx.drawImage(ubsImg(), b.x * T - cx, b.y * T - cy) }));
+  const vis = (px, py) => px > cx - 32 && px < cx + VW + 16 && py > cy - 32 && py < cy + VH + 16;
+  for (const n of npcs) if (vis(n.x * T, n.y * T)) draws.push({ y: n.y, f: () => {
+    const bob = Math.floor((frame + n.x * 7) / 40) % 2;
+    ctx.drawImage(person(n.look, n.dir, 0), n.x * T - cx, n.y * T - cy - bob);
+    const r = n.region;
+    if (r && !S.ins[r.id] && objDone(r) && isOpen(r)) bubble(n.x * T - cx + 9, n.y * T - cy - 12 - (Math.floor(frame / 15) % 2));
+    if (n.id === 'ana' && !S.met.ana) bubble(n.x * T - cx + 9, n.y * T - cy - 12 - (Math.floor(frame / 15) % 2));
+  } });
+  for (const p of pots) if (vis(p.x * T, p.y * T)) draws.push({ y: p.y, f: () => {
+    ctx.drawImage(potImg(p.full), p.x * T - cx, p.y * T - cy);
+    if (p.full && frame % 50 < 25) { ctx.fillStyle = K; ctx.fillRect(p.x * T - cx + 4 + (frame % 50) / 6, p.y * T - cy - 2, 2, 1); ctx.fillRect(p.x * T - cx + 11 - (frame % 50) / 8, p.y * T - cy - 4, 2, 1); }
+  } });
+  for (const g of germs) if (vis(g.px, g.py)) draws.push({ y: g.py / T, f: () => ctx.drawImage(germImg(THEMES[g.r.id].germ, Math.floor(frame / 12) % 2), Math.round(g.px) - cx, Math.round(g.py) - cy - (Math.floor(frame / 8) % 2)) });
+  if (S.started && !titleOn) {
+    const step = P.moving ? (Math.floor((P.px + P.py) / 8) % 2 ? 1 : 2) : 0;
+    draws.push({ y: P.py / T + .01, f: () => ctx.drawImage(person(LOOK.hero, P.dir, step), Math.round(P.px) - cx, Math.round(P.py) - cy) });
+  }
+  draws.sort((a, b) => a.y - b.y).forEach(d => d.f());
+  for (const p of poofs) {
+    const r = 3 + p.t / 2;
+    ctx.fillStyle = p.t % 6 < 3 ? '#ffffff' : p.col;
+    for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4; ctx.fillRect(Math.round(p.x - cx + Math.cos(a) * r) - 1, Math.round(p.y - cy + Math.sin(a) * r) - 1, 3, 3); }
+  }
+}
+function bubble(x, y) { ctx.fillStyle = K; ctx.fillRect(x - 1, y - 1, 8, 10); ctx.fillStyle = '#fff'; ctx.fillRect(x, y, 6, 8); ctx.fillStyle = '#e24b4b'; ctx.fillRect(x + 2, y + 1, 2, 4); ctx.fillRect(x + 2, y + 6, 2, 1); }
+
+function tick() {
+  frame++; if (bumpT > 0) bumpT--;
+  if (!stack.length && !busy && !titleOn && S.started) { updatePlayer(); updateGerms(); }
+  poofs.forEach(p => p.t++); poofs = poofs.filter(p => p.t < 24);
+}
+let last = performance.now(), acc = 0;
+function loop(t) {
+  acc += Math.min(100, t - last); last = t;
+  while (acc >= 1000 / 60) { tick(); acc -= 1000 / 60; }
+  render(); requestAnimationFrame(loop);
+}
+// o console é desenhado em tamanho fixo e escalado para caber na janela
+function resize() {
+  const con = $('console'), stage = $('stage');
+  const de = document.documentElement, vw = de.clientWidth || innerWidth, vh = de.clientHeight || innerHeight;
+  const land = vw > vh * 1.15;
+  con.classList.toggle('land', land);
+  let W, H, sh, s;
+  if (land) { W = 840; H = 440; s = clamp(Math.min((vw - 24) / W, (vh - 24) / H), .35, 2.2); sh = H - 32 - 40; }
+  else { W = 380; s = clamp((vw - 16) / W, .35, 1.8); H = clamp((vh - 16) / s, 640, 940); if (H * s > vh - 16) s = (vh - 16) / H; sh = H - 372; }
+  con.style.width = W + 'px'; con.style.height = H + 'px'; con.style.setProperty('--sh', sh + 'px');
+  con.style.transform = `scale(${s})`; stage.style.width = W * s + 'px'; stage.style.height = H * s + 'px';
+  const g = $('game');
+  SC = 2; VW = Math.ceil(g.clientWidth / SC); VH = Math.ceil(g.clientHeight / SC);
+  cv.width = VW; cv.height = VH; cv.style.width = VW * SC + 'px'; cv.style.height = VH * SC + 'px';
+  ctx.imageSmoothingEnabled = false;
+}
+addEventListener('resize', resize);
+addEventListener('orientationchange', () => setTimeout(resize, 250));
+
+/* ================= CONVERSAS ================= */
+const whoOf = n => ({ name: n.name, look: n.look, color: n.region ? THEMES[n.region.id].ui : THEMES.vila.ui });
+async function talk(n) {
+  const w = whoOf(n);
+  if (n.region) return guardian(n.region, w);
+  switch (n.id) {
+    case 'ana': {
+      S.met.ana = 1;
+      await say(['Oi! Aqui é a <b>UBS</b>. Os portões da vila não abrem sozinhos: <b>só um profissional de saúde</b> pode liberar, depois de aplicar a vacina.', 'Quando você se vacinar, eu te mostro um <b>QR code</b> no meu app para você escanear. Aí o portão daquela vacina abre!'], w);
+      const c = await choose('Já tomou uma vacina e recebeu o código?', ['Tenho um código', 'Ainda não'], { who: w });
+      if (c === 0) await receiveFlow();
+      break;
+    }
+    case 'vovo': {
+      const n8 = insCount();
+      await say([
+        'Quando muita gente se vacina, o vírus não encontra caminho para se espalhar.',
+        'Assim até quem <b>não pode</b> tomar certas vacinas, como bebês pequenos, fica protegido. Isso se chama <b>imunidade coletiva</b>.',
+        n8 >= 8 ? 'E olha só: todas as janelas acesas! A vila inteira está protegida, graças a você.' : `Cada insígnia acende mais casas da vila. Já temos <b>${Math.round(n8 / 8 * 100)}%</b> de proteção!`], w);
+      break;
+    }
+    case 'leo': await say(['A vacina da dengue tem <b>duas doses</b>! A primeira já abre a Lagoa Parada...', '...mas a guardiã só entrega a insígnia depois da <b>segunda dose</b>. Esquema completo é proteção completa!'], w); break;
+    case 'bia': await say(['Doeu? Só uma picadinha rápida.', 'Às vezes o braço fica dolorido ou dá uma febrinha. É normal e passa logo. Se ficar preocupado, é só voltar na UBS.'], w); break;
+    case 'ze': await say(['Me mandaram no grupo que vacina tem chip. Imagina!', 'A vacina mostra ao seu sistema imune como o invasor é, para ele aprender a se defender. <b>Sem chip, sem mágica: é ciência.</b>', 'Antes de repassar uma mensagem, confira a fonte. Na dúvida, pergunte na UBS!'], w); break;
+    case 'caio': {
+      await say(['Sou agente comunitário de saúde. Sua <b>caderneta digital</b> guarda todas as vacinas desde que você nasceu.'], w);
+      if (!S.synced) {
+        const c = await choose('Quer sincronizar agora? As vacinas da infância já abrem áreas!', ['Sincronizar caderneta', 'Depois'], { who: w });
+        if (c === 0) await syncFlow();
+      } else await say(['Sua caderneta já está sincronizada. Aperte o ícone de livrinho para ver os carimbos!'], w);
+      break;
+    }
+  }
+}
+async function readSign(x, y) {
+  const gx = x - 1, r = y === 14 ? REGIONS[GATES_X.indexOf(gx)] : REGIONS[4 + GATES_X.indexOf(gx)];
+  const st = S.ins[r.id] ? 'Insígnia conquistada!' : isOpen(r) ? 'Portão aberto.' : 'Portão fechado.';
+  await say([`<b>${r.name.toUpperCase()}</b><br>Abre com a vacina: <b>${VAC[r.vac].nome}</b>. ${st}`]);
+}
+async function gateInfo(r) {
+  AU.no();
+  const v = VAC[r.vac];
+  await say([`O portão da <b>${r.name}</b> está trancado.`, `Ele abre com a vacina <b>${v.nome}</b>. Indicação: ${v.idade}.`, recNow(r.vac) ? 'Pela sua idade, ela é indicada <b>agora</b>! Converse com sua família e vá até a UBS.' : 'Ninguém abre este portão sozinho: só o profissional de saúde que aplicar a vacina pode liberar.']);
+  const c = await choose(null, ['Tenho um código do profissional', 'Ver na caderneta', 'Ok']);
+  if (c === 0) await receiveFlow(r.vac); else if (c === 1) await caderneta(VAC_ORDER.indexOf(r.vac));
+}
+async function ubsDoor() {
+  const c = await choose('UBS · Sala de vacina. O que você quer fazer?', ['Tenho um código do profissional', 'Abrir minha caderneta', 'Sair']);
+  if (c === 0) await receiveFlow(); else if (c === 1) await caderneta();
+}
+async function emptyPot(p) {
+  if (!p.full) { await say(['Este vaso já está vazio e virado para baixo. Sem água, sem mosquito!']); return; }
+  const c = await choose('Um vaso com água parada! Larvas de mosquito podem estar aí.', ['Esvaziar e virar o vaso', 'Deixar']);
+  if (c !== 0) return;
+  p.full = false; const pr = progOf(p.r); if (!pr.includes(p.i)) pr.push(p.i);
+  AU.splash(); poofs.push({ x: p.x * T + 8, y: p.y * T + 8, t: 0, col: '#5cc7c0' }); refreshHud();
+  toast(objDone(p.r) ? 'Todos os focos eliminados! Fale com a Sra. Garça.' : `Foco eliminado! ${pr.length}/3`, 2600);
+}
+async function guardian(r, w) {
+  if (S.ins[r.id]) { await say([`Você já tem a insígnia <b>${r.badge}</b>. Obrigado por proteger a ${r.name}!`, 'Lembre: manter a caderneta em dia protege você e quem está perto.'], w); return; }
+  if (!S.met[r.id]) { S.met[r.id] = 1; await say(r.intro, w); }
+  if (!objDone(r)) { const left = objTotal(r) - progOf(r).length; await say([r.obj === 'focos' ? `Ainda há <b>${left}</b> foco(s) de água parada por aqui. Procure vasos e aperte A para esvaziar!` : `Ainda há <b>${left}</b> germe(s) por aqui. Você está vacinado: encoste neles para neutralizá-los!`], w); return; }
+  const v = r.vac, n = doses(v).length, need = VAC[v].need;
+  if (n < need) { await say([`Área limpa, muito bem! Mas sua caderneta mostra <b>dose ${n} de ${need}</b>.`, `A insígnia é entregue com o <b>esquema completo</b>. ${v === 'dengue' ? 'A 2ª dose da dengue é 3 meses depois da 1ª.' : 'Volte depois da próxima dose.'}`], w); return; }
+  await say(['Área limpa! Agora, uma pergunta para ganhar a insígnia:'], w);
+  for (;;) {
+    const c = await choose(r.q, r.opts, { who: w, cancel: false });
+    if (c === r.ok) { AU.ok(); await say([r.exp], w); break; }
+    AU.no(); await say(['Hmm, não é bem isso. Pense de novo!'], w);
+  }
+  S.ins[r.id] = Date.now(); save(); refreshHud();
+  await award(r);
+  if (insCount() >= 8 && !S.done) await ending();
+}
+
+/* ================= TELAS ================= */
+function confetti(card, colors) {
+  if (RM) return;
+  const c = h('div', { class: 'conf' });
+  for (let i = 0; i < 36; i++) c.append(h('i', { style: `left:${Math.random() * 100}%;background:${colors[i % colors.length]};animation-delay:${Math.random() * .6}s` }));
+  card.append(c); setTimeout(() => c.remove(), 2600);
+}
+async function award(r) {
+  AU.unlock();
+  const big = spr(shieldImg(r), 'big');
+  const card = h('div', { class: 'card cele', style: `--ui:${THEMES[r.id].ui};position:relative` },
+    h('div', { class: 'hint', style: 'color:#fff;opacity:.9' }, 'NOVA INSÍGNIA'), big, h('h2', {}, r.badge.toUpperCase()),
+    h('p', {}, `Você protegeu a área ${r.name}. Mais casas da vila acenderam as luzes!`),
+    h('p', { style: 'font-size:15px' }, `${insCount()} de 8 insígnias · proteção da vila ${Math.round(insCount() / 8 * 100)}%`),
+    h('button', { class: 'pbtn', type: 'button', onclick: () => L.close('A') }, 'CONTINUAR'));
+  let L; await overlay(card, { onMount: l => { L = l; setTimeout(() => confetti(card, ['#fff', '#ffcf3f', THEMES[r.id].acc[0]]), 50); } });
+}
+async function ending() {
+  S.done = true; save();
+  const card = h('div', { class: 'card cele', style: '--ui:#3f8f3c;position:relative' },
+    h('div', { class: 'hint', style: 'color:#fff' }, 'VILA IMUNE'), h('h2', {}, '100% PROTEGIDA!'),
+    h('p', {}, 'Você reuniu as 8 insígnias e todas as janelas da vila estão acesas.'),
+    h('p', {}, 'No mundo real é igual: cada vacina na sua caderneta protege você e quem vive perto de você.'),
+    h('p', { style: 'font-size:15px' }, 'Mantenha sua caderneta em dia e chame os amigos para conferir as deles!'),
+    h('button', { class: 'pbtn', type: 'button', onclick: () => L.close('A') }, 'VOLTAR À VILA'));
+  let L; await overlay(card, { onMount: l => { L = l; setTimeout(() => confetti(card, ['#fff', '#ffcf3f', '#ff7aa8', '#9ff3d8']), 50); } });
+  AU.unlock();
+}
+
+function slotEl(v, sel) {
+  const d = doses(v), V = VAC[v], r = RBV[v], th = THEMES[r.id];
+  const dots = []; for (let i = 0; i < V.need; i++) dots.push(h('i', { class: i < d.length ? 'on' : '' }));
+  const el = h('div', { class: 'slot' + (sel ? ' sel' : ''), role: 'button' },
+    h('div', { class: 'nm' }, V.curto.toUpperCase()),
+    h('div', { class: 'pr' }, V.protege.split('.')[0] + '.'),
+    recNow(v) && !d.length ? h('span', { class: 'tag' }, 'INDICADA AGORA') : null,
+    h('div', { class: 'ds' }, dots, h('span', {}, d.length ? ` ${Math.min(d.length, V.need)}/${V.need}` : ' PENDENTE')));
+  const area = spr(S.ins[r.id] ? shieldImg(r) : shieldImg(null), 'area'); if (!S.ins[r.id]) area.style.opacity = '.25';
+  el.append(area);
+  if (d.length) {
+    const full = d.length >= V.need;
+    el.append(h('div', { class: 'stamp' + (full ? '' : ' part'), style: `color:${th.ui}` }, h('b', {}, full ? 'VACINADO' : `${d.length}ª DOSE`), h('small', {}, fmt(d[d.length - 1].date)), h('b', {}, d[d.length - 1].src === 'sync' ? 'INFÂNCIA' : 'UBS')));
+  }
+  return el;
+}
+async function caderneta(start = 0) {
+  let sel = start;
+  for (;;) {
+    const slots = h('div', { class: 'slots' });
+    const done = VAC_ORDER.filter(complete).length;
+    const book = h('div', { class: 'book' },
+      h('div', { class: 'cover' }, h('div', {}, h('b', {}, 'CADERNETA DE VACINAÇÃO'), h('small', {}, S.synced ? 'Versão lúdica · sincronizada com a digital (demo)' : 'Versão lúdica · ainda não sincronizada')),
+        h('button', { class: 'x', type: 'button', 'aria-label': 'Fechar', onclick: () => L.close('B') }, 'X')),
+      h('div', { class: 'pg' },
+        h('div', { class: 'idrow' }, h('span', {}, h('b', {}, 'IDADE'), S.age + ' anos'), h('span', {}, h('b', {}, 'ESQUEMAS'), done + '/8 completos'), h('span', {}, h('b', {}, 'INSÍGNIAS'), insCount() + '/8')),
+        slots,
+        h('div', { class: 'hint' }, 'TOQUE EM UMA VACINA PARA VER DETALHES · B: FECHAR')));
+    const paint = () => { slots.replaceChildren(...VAC_ORDER.map((v, i) => { const s = slotEl(v, i === sel); s.addEventListener('click', () => { sel = i; L.close('A'); }); return s; })); const cur = slots.children[sel]; if (cur && cur.scrollIntoView) cur.scrollIntoView({ block: 'nearest' }); };
+    let L;
+    const res = await overlay(book, { onMount: l => { L = l; paint(); }, keys: (k, close) => {
+      const cols = innerWidth <= 380 ? 1 : 2;
+      if (k === 'LEFT') sel = Math.max(0, sel - 1); else if (k === 'RIGHT') sel = Math.min(7, sel + 1);
+      else if (k === 'UP') sel = Math.max(0, sel - cols); else if (k === 'DOWN') sel = Math.min(7, sel + cols);
+      else if (k === 'A' || k === 'B' || k === 'BOOK') { close(k === 'A' ? 'A' : 'B'); return; } else return;
+      AU.move(); paint();
+    } });
+    if (res !== 'A') return;
+    AU.ok();
+    const again = await vacDetail(VAC_ORDER[sel]);
+    if (again === 'exit') return;
+  }
+}
+async function vacDetail(v) {
+  const V = VAC[v], r = RBV[v], d = doses(v), full = d.length >= V.need;
+  const kv = h('dl', { class: 'kv' },
+    h('dt', {}, 'PROTEGE'), h('dd', {}, V.protege),
+    h('dt', {}, 'IDADE'), h('dd', {}, V.idade + (recNow(v) ? ' · indicada agora para você!' : '')),
+    h('dt', {}, 'ESQUEMA'), h('dd', {}, V.esquema),
+    h('dt', {}, 'DOSES'), h('dd', {}, d.length ? d.map((x, i) => `${i + 1}ª: ${fmt(x.date)} (${x.src === 'sync' ? 'infância' : 'código ' + x.lote})`).join(' · ') : 'nenhuma registrada'),
+    h('dt', {}, 'ÁREA'), h('dd', {}, `${r.name}: ${S.ins[r.id] ? 'insígnia ' + r.badge + ' conquistada' : isOpen(r) ? 'aberta' : 'fechada'}`),
+    V.anual && d.length ? [h('dt', {}, 'VALIDADE'), h('dd', {}, 'até ' + fmt(new Date(d[d.length - 1].date).setFullYear(new Date(d[d.length - 1].date).getFullYear() + 1)) + ' (próxima campanha)')] : null);
+  const card = h('div', { class: 'card', style: `--ui:${THEMES[r.id].ui}` },
+    h('h2', { style: `color:${THEMES[r.id].ui}` }, V.nome.toUpperCase()), kv,
+    !full ? h('button', { class: 'pbtn', type: 'button', onclick: () => L.close('reg') }, 'TENHO UM CÓDIGO DO PROFISSIONAL') : null,
+    h('div', { class: 'hint' }, full ? 'A/B: VOLTAR' : 'A: DIGITAR CÓDIGO · B: VOLTAR'));
+  let L;
+  const res = await overlay(card, { onMount: l => { L = l; }, keys: (k, close) => { if (k === 'A') close(full ? 'B' : 'reg'); else if (k === 'B') close('B'); } });
+  if (res === 'reg') { await receiveFlow(v); return 'back'; }
+  return 'back';
+}
+async function mapa() {
+  const s = 4, c = h('canvas', { width: MW * s, height: MH * s, class: 'px' }), g = c.getContext('2d');
+  for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
+    const tk = themeKey(x, y), th = THEMES[tk], ch = map[y][x], d = TD[ch];
+    let col = th.g[1];
+    if (d.water) col = th.water[1]; else if (d.wall) col = th.wall[1]; else if (ch === 'T') col = th.leaf[1]; else if (d.path || d.bridge) col = th.path[1]; else if (ch === 'X' || ch === 'D') col = '#f3e6c8';
+    g.fillStyle = col; g.fillRect(x * s, y * s, s, s);
+  }
+  for (const r of REGIONS) if (!isOpen(r)) { g.fillStyle = 'rgba(20,18,40,.62)'; g.fillRect(r.x0 * s, r.y0 * s, 16 * s, 14 * s); }
+  g.fillStyle = '#1fa39a'; g.fillRect(30 * s, 15 * s, 3 * s, 2 * s);
+  const wrap = h('div', { class: 'mapwrap' }, c);
+  for (const r of REGIONS) {
+    const st = S.ins[r.id] ? '★ INSÍGNIA' : isOpen(r) ? 'ABERTA' : 'FECHADA';
+    wrap.append(h('div', { class: 'mlab', style: `left:${(r.x0 + 8) / MW * 100}%;top:${(r.y0 + 7) / MH * 100}%` }, r.name.toUpperCase(), h('br'), VAC[r.vac].curto.toUpperCase(), h('br'), st));
+  }
+  wrap.append(h('div', { class: 'mlab', style: 'left:50%;top:50%' }, 'VILA IMUNE'));
+  const me = h('div', { class: 'mlab', style: `left:${(P.x + .5) / MW * 100}%;top:${(P.y + .5) / MH * 100}%;width:12px;height:12px;background:#ffcf3f;border:3px solid #1d1b2e;border-radius:50%;animation:blk .6s steps(1) infinite` });
+  wrap.append(me);
+  const card = h('div', { class: 'card' }, h('h2', {}, 'MAPA DO MUNDO'), wrap,
+    h('div', { class: 'legend' }, h('span', {}, h('i', { style: 'background:#ffcf3f;border-radius:50%' }), 'você'), h('span', {}, h('i', { style: 'background:#1fa39a' }), 'UBS'), h('span', {}, h('i', { style: 'background:#3a3650' }), 'área fechada')),
+    h('p', { style: 'font-size:15px' }, 'Cada área abre com uma vacina registrada pelo profissional de saúde. Procure as placas nos portões.'),
+    h('div', { class: 'hint' }, 'A/B: FECHAR'));
+  await overlay(card, { keys: (k, close) => { if (k === 'A' || k === 'B' || k === 'MAP') close(); } });
+}
+async function menu() {
+  const c = await choose(null, ['Continuar', 'Caderneta', 'Mapa', 'Tenho um código de vacina', 'Sincronizar caderneta', soundOn ? 'Som: ligado' : 'Som: desligado', 'Como funciona', 'Novo jogo', 'Modo profissional (equipe de saúde)']);
+  if (c === 1) await caderneta(); else if (c === 2) await mapa(); else if (c === 3) await receiveFlow();
+  else if (c === 8) await proFlow();
+  else if (c === 4) { if (S.synced) await say(['Sua caderneta já está sincronizada.']); else await syncFlow(); }
+  else if (c === 5) { soundOn = !soundOn; store.set('caderneta-viva-sound', soundOn); toast(soundOn ? 'Som ligado' : 'Som desligado'); }
+  else if (c === 6) await how();
+  else if (c === 7) { const k = await choose('Apagar todo o progresso e começar de novo?', ['Não', 'Sim, apagar'], { cancel: true }); if (k === 1) { store.del(SAVE_KEY); location.reload(); } }
+}
+
+/* ---------- registro da vacina ---------- */
+function rid() { const a = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; return a[Math.floor(Math.random() * 24)] + a[Math.floor(Math.random() * 24)] + '-' + (1000 + Math.floor(Math.random() * 9000)); }
+/* ---------- código do profissional ----------
+   O profissional gera um código assinado (vacina + dose + número aleatório + verificação).
+   O jogo só abre uma área com um código válido, de uso único e da dose certa.
+   Nesta demonstração a "assinatura" é uma soma de verificação com chave embutida;
+   na versão real ela seria uma assinatura digital do sistema de saúde, conferida no servidor. */
+const B32 = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const CODE_KEY = 'vaxi-boy-ubs-2026';
+const PRO_PIN = '2468';
+function chk15(str) { let x = 2166136261; for (const ch of str) { x ^= ch.charCodeAt(0); x = Math.imul(x, 16777619); } x ^= x >>> 13; x = Math.imul(x, 0x5bd1e995); return ((x ^ (x >>> 15)) >>> 0) & 0x7fff; }
+function makeCode(v, dose) {
+  const vi = VAC_ORDER.indexOf(v), nonce = Math.floor(Math.random() * (1 << 20));
+  const data = nonce * 32 + vi * 4 + (dose - 1);
+  let n = BigInt(data) * 32768n + BigInt(chk15(CODE_KEY + ':' + data)), s = '';
+  for (let i = 0; i < 8; i++) { s = B32[Number(n & 31n)] + s; n >>= 5n; }
+  return s.slice(0, 4) + '-' + s.slice(4);
+}
+function readCode(str) {
+  const s = String(str).toUpperCase().replace(/[^A-Z0-9]/g, '').replace(/^VAXI/, '');
+  if (s.length !== 8) return null;
+  let n = 0n;
+  for (const ch of s) { const i = B32.indexOf(ch); if (i < 0) return null; n = n * 32n + BigInt(i); }
+  const data = Number(n >> 15n), ck = Number(n & 32767n);
+  if (chk15(CODE_KEY + ':' + data) !== ck) return null;
+  const vi = (data >> 2) & 7;
+  return { v: VAC_ORDER[vi], dose: (data & 3) + 1, id: data, code: s.slice(0, 4) + '-' + s.slice(4) };
+}
+// QR code: o profissional mostra, o jovem fotografa com a câmera do celular
+const canMakeQR = typeof window.qrcode === 'function';
+function qrCanvas(text) {
+  const q = window.qrcode(0, 'M'); q.addData(text); q.make();
+  const n = q.getModuleCount(), pad = 2, c = h('canvas', { width: n + pad * 2, height: n + pad * 2, class: 'px qr', 'aria-label': 'QR code do código ' + text });
+  const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.fillStyle = K;
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) if (q.isDark(y, x)) g.fillRect(x + pad, y + pad, 1, 1);
+  return c;
+}
+async function decodeQR(file) {
+  const bmp = await new Promise((res, rej) => { const img = new Image(); img.onload = () => res(img); img.onerror = rej; img.src = URL.createObjectURL(file); });
+  if ('BarcodeDetector' in window) {
+    try { const r = await new BarcodeDetector({ formats: ['qr_code'] }).detect(bmp); if (r.length) return r[0].rawValue; } catch (e) {}
+  }
+  if (typeof window.jsQR !== 'function') return null;
+  for (const max of [1000, 700, 1400]) {
+    const s = Math.min(1, max / Math.max(bmp.naturalWidth, bmp.naturalHeight));
+    const w = Math.round(bmp.naturalWidth * s), hh = Math.round(bmp.naturalHeight * s);
+    const c = document.createElement('canvas'); c.width = w; c.height = hh;
+    const g = c.getContext('2d'); g.drawImage(bmp, 0, 0, w, hh);
+    const r = window.jsQR(g.getImageData(0, 0, w, hh).data, w, hh);
+    if (r && r.data) return r.data;
+  }
+  return null;
+}
+const codeInput = ph => h('input', { class: 'code', type: 'text', inputmode: 'text', autocomplete: 'off', autocapitalize: 'characters', spellcheck: 'false', maxlength: '12', placeholder: ph });
+function errLine() { return h('div', { class: 'err', role: 'alert' }); }
+
+// lado do jovem: receber a vacina
+async function receiveFlow(pre) {
+  const inp = codeInput('XXXX-XXXX'), err = errLine();
+  let L;
+  const submit = () => {
+    const c = readCode(inp.value);
+    if (!c) { AU.no(); err.textContent = 'Código inválido. Confira com o profissional que aplicou a vacina.'; return; }
+    S.used = S.used || [];
+    if (S.used.includes(c.id)) { AU.no(); err.textContent = 'Este código já foi usado.'; return; }
+    const have = doses(c.v).length;
+    if (!VAC[c.v].anual && c.dose <= have) { AU.no(); err.textContent = `A ${c.dose}ª dose de ${VAC[c.v].nome} já está na sua caderneta.`; return; }
+    if (!VAC[c.v].anual && c.dose > have + 1) { AU.no(); err.textContent = `Falta registrar a ${have + 1}ª dose de ${VAC[c.v].nome} antes desta.`; return; }
+    L.close(c);
+  };
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); submit(); } else if (e.key === 'Escape') L.close(null); });
+  inp.addEventListener('input', () => { err.textContent = ''; });
+  // abre a câmera nativa (foto); funciona em Android e iPhone sem permissão especial
+  const file = h('input', { type: 'file', accept: 'image/*', capture: 'environment', hidden: '' });
+  file.addEventListener('change', async () => {
+    const f = file.files && file.files[0]; file.value = ''; if (!f) return;
+    err.textContent = 'Lendo o QR code...';
+    let txt = null; try { txt = await decodeQR(f); } catch (e) {}
+    if (!txt) { AU.no(); err.textContent = 'Não achei um QR code na foto. Tente de novo mais perto, ou digite o código.'; return; }
+    inp.value = txt.replace(/^VAXI/i, '').replace(/^(.{4})(.{4})$/, '$1-$2'); AU.nfc(); submit();
+  });
+  const scanBtn = h('button', { class: 'pbtn scan', type: 'button', onclick: () => file.click() }, h('span', { class: 'qri', 'aria-hidden': 'true' }), 'ESCANEAR QR CODE');
+  const card = h('div', { class: 'card app' },
+    h('div', { class: 'apphead' }, h('div', {}, h('b', {}, 'RECEBER VACINA'), h('small', {}, 'Só o profissional de saúde libera'))),
+    h('p', { style: 'font-size:14px' }, (pre ? `Tomou a vacina ${VAC[pre].nome}? ` : '') + 'Depois de vacinar, o profissional mostra um QR code no app dele. Escaneie:'),
+    scanBtn, file,
+    h('div', { class: 'orsep' }, 'ou digite o código'),
+    inp, err,
+    h('div', { class: 'row2' }, h('button', { class: 'pbtn', type: 'button', onclick: submit }, 'CONFIRMAR'), h('button', { class: 'pbtn ghost', type: 'button', onclick: () => L.close(null) }, 'VOLTAR')));
+  const got = await overlay(card, { onMount: l => { L = l; }, keys: (k, close) => { if (k === 'B') close(null); else if (k === 'A') submit(); } });
+  if (!got) return;
+  const v = got.v, V = VAC[v];
+  // verificação animada
+  const msg = h('div', { class: 'tapmsg' }, 'CONECTANDO AO PROFISSIONAL...');
+  const card1 = h('div', { class: 'card app' },
+    h('div', { class: 'apphead' }, h('div', {}, h('b', {}, 'VERIFICANDO'), h('small', {}, V.nome + ' · dose ' + got.dose))),
+    h('div', { class: 'tap' }, h('div', { class: 'waves' }, h('i'), h('i'), h('i')),
+      h('div', { class: 'phone l' }, h('div', { class: 'scr' }, 'CÓDIGO'), 'SAÚDE'),
+      h('div', { class: 'phone r' }, h('div', { class: 'scr' }, 'JOGO'), 'VOCÊ')),
+    msg);
+  await overlay(card1, { keys: () => {}, onMount: async l => {
+    await wait(RM ? 200 : 1150); msg.textContent = 'CONFERINDO ASSINATURA...'; AU.nfc();
+    await wait(RM ? 300 : 1000); msg.textContent = 'ASSINATURA DO PROFISSIONAL VÁLIDA'; AU.ok();
+    await wait(RM ? 300 : 800); l.close();
+  } });
+  // registro
+  S.used.push(got.id);
+  const first = doses(v).length === 0;
+  const dose = { date: Date.now(), lote: got.code, src: 'pro' };
+  (S.doses[v] = S.doses[v] || []).push(dose); save();
+  const n = doses(v).length;
+  const r = RBV[v];
+  const t = h('div', { class: 'ticket' },
+    h('span', { class: 'ok' }, 'VACINA REGISTRADA'),
+    h('dl', { class: 'kv' }, h('dt', {}, 'VACINA'), h('dd', {}, V.nome), h('dt', {}, 'DOSE'), h('dd', {}, `${n} de ${V.need}` + (n >= V.need ? ' · esquema completo' : '')),
+      h('dt', {}, 'DATA'), h('dd', {}, fmt(dose.date)), h('dt', {}, 'CÓDIGO'), h('dd', {}, dose.lote), h('dt', {}, 'LIBERADO POR'), h('dd', {}, 'Profissional da UBS (demo)')));
+  const card2 = h('div', { class: 'card' }, h('h2', {}, 'CADERNETA ATUALIZADA'), t,
+    h('p', { style: 'font-size:15px' }, first ? `Seu jogo recebeu o carimbo. A área <b>${r.name}</b> vai abrir!`.replace(/<\/?b>/g, '') : n >= V.need ? 'Esquema completo! Agora você pode ganhar a insígnia da área.' : 'Dose registrada. Falta pouco para completar o esquema!'),
+    h('button', { class: 'pbtn', type: 'button', onclick: () => L2.close('A') }, 'CONTINUAR'));
+  let L2; AU.stamp();
+  await overlay(card2, { onMount: l => { L2 = l; } });
+  refreshHud();
+  if (first) await unlockCele(r);
+}
+// lado do profissional: login com PIN, escolhe vacina e dose, gera o código
+async function proFlow() {
+  { // login
+    const inp = h('input', { class: 'code', type: 'password', inputmode: 'numeric', autocomplete: 'off', maxlength: '8', placeholder: 'PIN' }), err = errLine();
+    let L;
+    const go = () => { if (inp.value === PRO_PIN) { AU.ok(); L.close('ok'); } else { AU.no(); err.textContent = 'PIN incorreto. Este modo é só para a equipe de saúde.'; inp.value = ''; } };
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); go(); } else if (e.key === 'Escape') L.close(null); });
+    const card = h('div', { class: 'card app' },
+      h('div', { class: 'apphead' }, h('div', {}, h('b', {}, 'MODO PROFISSIONAL'), h('small', {}, 'App da equipe de saúde · demonstração'))),
+      h('p', { style: 'font-size:14px' }, 'Acesso só para profissionais de saúde. Na versão real, o login seria a conta oficial do profissional.'),
+      inp, err,
+      h('div', { class: 'row2' }, h('button', { class: 'pbtn', type: 'button', onclick: go }, 'ENTRAR'), h('button', { class: 'pbtn ghost', type: 'button', onclick: () => L.close(null) }, 'VOLTAR')));
+    const ok = await overlay(card, { onMount: l => { L = l; setTimeout(() => inp.focus(), 60); }, keys: (k, close) => { if (k === 'B') close(null); else if (k === 'A') go(); } });
+    if (!ok) return;
+  }
+  let sel = 0;
+  for (;;) {
+    const items = VAC_ORDER.map((x, i) => {
+      const it = h('div', { class: 'opt vopt', role: 'button' }, VAC[x].nome, h('span', { class: 'r' }, VAC[x].need > 1 ? VAC[x].need + ' DOSES' : '1 DOSE'));
+      it.addEventListener('click', () => { sel = i; paint(); L.close('A'); });
+      return it;
+    });
+    const paint = () => items.forEach((it, i) => it.classList.toggle('sel', i === sel));
+    const card = h('div', { class: 'card app' },
+      h('div', { class: 'apphead' }, h('div', {}, h('b', {}, 'SALA DE VACINA'), h('small', {}, 'Qual vacina você acabou de aplicar?'))),
+      h('div', { class: 'list' }, items), h('div', { class: 'hint' }, 'A: ESCOLHER · B: SAIR DO MODO PROFISSIONAL'));
+    let L;
+    const res = await overlay(card, { onMount: l => { L = l; paint(); }, keys: (k, close) => {
+      if (k === 'UP') { sel = (sel + 7) % 8; paint(); AU.move(); } else if (k === 'DOWN') { sel = (sel + 1) % 8; paint(); AU.move(); }
+      else if (k === 'A') close('A'); else if (k === 'B') close('B');
+    } });
+    if (res !== 'A') return;
+    const v = VAC_ORDER[sel], V = VAC[v];
+    let dose = 1;
+    if (V.need > 1) {
+      const d = await choose(`${V.nome}: qual dose foi aplicada?`, Array.from({ length: V.need }, (_, i) => `${i + 1}ª dose`));
+      if (d < 0) continue; dose = d + 1;
+    }
+    const code = makeCode(v, dose);
+    const card2 = h('div', { class: 'card app' },
+      h('div', { class: 'apphead' }, h('div', {}, h('b', {}, 'CÓDIGO DE LIBERAÇÃO'), h('small', {}, `${V.nome} · ${dose}ª dose · ${fmt(Date.now())}`))),
+      canMakeQR ? h('div', { class: 'qrbox' }, qrCanvas('VAXI' + code.replace('-', ''))) : null,
+      h('div', { class: 'bigcode' }, code),
+      h('p', { style: 'font-size:14px' }, 'Mostre o QR code para o jovem escanear no jogo (ou passe o código). Vale uma vez só.'),
+      h('div', { class: 'row2' }, h('button', { class: 'pbtn', type: 'button', onclick: () => L2.close('A') }, 'NOVA VACINA'), h('button', { class: 'pbtn ghost', type: 'button', onclick: () => L2.close('B') }, 'SAIR')));
+    let L2;
+    const r2 = await overlay(card2, { onMount: l => { L2 = l; } });
+    if (r2 === 'B') return;
+  }
+}
+async function unlockCele(r) {
+  AU.unlock();
+  const th = THEMES[r.id];
+  const g = spr(person(r.look, 'D', 0), 'big');
+  const card = h('div', { class: 'card cele', style: `--ui:${th.ui};position:relative` },
+    h('div', { class: 'hint', style: 'color:#fff;opacity:.9' }, 'PORTÃO ABERTO!'), g, h('h2', {}, r.name.toUpperCase()),
+    h('p', {}, `${r.gname} espera por você. Siga a placa na vila até o portão ${r.row === 0 ? 'de cima' : 'de baixo'}.`),
+    h('button', { class: 'pbtn', type: 'button', onclick: () => L.close('A') }, 'VAMOS LÁ!'));
+  let L; await overlay(card, { onMount: l => { L = l; setTimeout(() => confetti(card, ['#fff', '#ffcf3f', th.acc[0]]), 50); } });
+  toast('Novo portão aberto: ' + r.name + '!', 3000);
+}
+async function syncFlow() {
+  const list = h('div', { class: 'syncl' });
+  const card = h('div', { class: 'card' }, h('h2', {}, 'SINCRONIZANDO'), h('p', { style: 'font-size:15px' }, 'Lendo a caderneta digital (dados de demonstração)...'), list);
+  const birth = new Date(); birth.setFullYear(birth.getFullYear() - S.age);
+  const at = m => { const d = new Date(birth); d.setMonth(d.getMonth() + m); return d.getTime(); };
+  const rows = [['Hepatite B', '3 doses', 'hepb', [0, 2, 6]], ['Tríplice viral', '2 doses', 'scr', [12, 15]], ['Febre amarela', '2 doses', 'fa', [9, 48]], ['DTP (infância)', '5 doses', null, null], ['Pólio e outras', 'em dia', null, null]];
+  let skip = false;
+  await overlay(card, { keys: (k, close) => { if (k === 'A' || k === 'B') { if (skip === 'done') close(); else skip = true; } }, onMount: async L => {
+    for (const [nm, ds, v, months] of rows) {
+      await wait(skip || RM ? 30 : 450);
+      list.append(h('div', {}, h('span', {}, nm), h('b', { style: 'color:var(--ok)' }, ds + ' ✓')));
+      AU.blip();
+      if (v && !doses(v).length) S.doses[v] = months.map(m => ({ date: at(m), src: 'sync' }));
+    }
+    S.synced = true; save();
+    await wait(skip || RM ? 30 : 400);
+    list.append(h('div', { style: 'border:0' }, h('b', {}, '3 áreas liberadas!'), h('span', {}, 'Mata, Usina e Ilhas')));
+    card.append(h('button', { class: 'pbtn', type: 'button', onclick: () => L.close() }, 'CONTINUAR'));
+    AU.unlock(); skip = 'done';
+  } });
+  refreshHud();
+}
+async function how() {
+  const card = h('div', { class: 'card' }, h('h2', {}, 'COMO FUNCIONA'),
+    h('ol', { class: 'steps' },
+      ...['Você toma uma vacina de verdade na UBS.', 'O profissional de saúde abre o app dele (Modo Profissional) e registra qual vacina e qual dose aplicou.', 'O app gera um código assinado, que vale uma vez só. Ele mostra um QR code (ou passa o código) e você escaneia no jogo.', 'O jogo confere o código: a vacina ganha carimbo na caderneta e o portão daquela área abre.', 'Limpe a área, responda o guardião e ganhe a insígnia. Cada insígnia acende casas da vila.']
+        .map((t, i) => h('li', {}, h('span', { class: 'n' }, i + 1), h('span', {}, t)))),
+    h('p', { style: 'font-size:14px' }, 'Sem o código do profissional, nenhuma área nova abre. As vacinas da infância vêm da caderneta digital, onde já foram registradas por profissionais.'),
+    h('h2', { style: 'font-size:12px' }, 'CONTROLES'),
+    h('div', { class: 'keys' }, h('span', {}, h('kbd', {}, 'SETAS'), ' andar'), h('span', {}, h('kbd', {}, 'Z'), ' ', h('kbd', {}, 'ENTER'), ' botão A'), h('span', {}, h('kbd', {}, 'X'), ' ', h('kbd', {}, 'ESC'), ' botão B'), h('span', {}, h('kbd', {}, 'C'), ' caderneta (SELECT)'), h('span', {}, h('kbd', {}, 'P'), ' menu (START)'), h('span', {}, h('kbd', {}, 'M'), ' mapa')),
+    h('button', { class: 'pbtn', type: 'button', onclick: () => L.close() }, 'ENTENDI'));
+  let L; await overlay(card, { onMount: l => { L = l; } });
+}
+
+/* ---------- título e início ---------- */
+async function title() {
+  titleOn = true; refreshHud();
+  const hasSave = !!store.get(SAVE_KEY, null);
+  const opts = hasSave ? ['CONTINUAR', 'NOVO JOGO', 'COMO FUNCIONA', 'MODO PROFISSIONAL'] : ['NOVO JOGO', 'COMO FUNCIONA', 'MODO PROFISSIONAL'];
+  let sel = 0;
+  const items = opts.map((t, i) => { const it = h('div', { class: 'opt', role: 'button' }, t); it.addEventListener('click', e => { e.stopPropagation(); sel = i; paint(); pick(); }); return it; });
+  const paint = () => items.forEach((it, i) => it.classList.toggle('sel', i === sel));
+  const el = h('div', { class: 'title' },
+    h('div', { class: 'logo' }, h('small', {}, 'UM JOGO DE VACINAÇÃO'), h('b', {}, 'VAXI BOY'), h('span', {}, 'CADERNETA VIVA')),
+    h('div', { class: 'duo' }, spr(person(LOOK.hero, 'D', 0)), h('span', { class: 'vs' }, 'VS'), spr(germImg('#9b4ad1', 0))),
+    h('div', { class: 'menu' }, items),
+    h('div', { class: 'foot' }, 'Cada vacina que você toma de verdade abre uma nova área do mundo.'));
+  let res;
+  const done = new Promise(r => { res = r; });
+  const L = { el, key(k) {
+    if (k === 'UP') { sel = (sel + opts.length - 1) % opts.length; paint(); AU.move(); }
+    else if (k === 'DOWN') { sel = (sel + 1) % opts.length; paint(); AU.move(); }
+    else if (k === 'A') pick();
+  } };
+  function pick() { AU.ok(); const o = opts[sel]; if (o === 'COMO FUNCIONA') { flow(how); return; } if (o === 'MODO PROFISSIONAL') { flow(proFlow); return; } pop(L); res(o); }
+  push(L); paint();
+  const choice = await done;
+  titleOn = false;
+  if (choice === 'CONTINUAR') {
+    S = Object.assign(fresh(), store.get(SAVE_KEY, {}));
+    P.x = S.pos.x; P.y = S.pos.y; P.dir = S.pos.dir || 'D';
+    if (tileSolid(P.x, P.y) || npcAt(P.x, P.y)) { P.x = 32; P.y = 18; }
+    P.px = P.x * T; P.py = P.y * T; spawnEntities(); curReg = regAt(P.x, P.y); refreshHud();
+    toast('Bem-vindo de volta!');
+  } else await flow(newGame);
+}
+async function newGame() {
+  S = fresh(); S.started = true;
+  P.x = 32; P.y = 17; P.dir = 'R'; P.px = P.x * T; P.py = P.y * T; P.moving = false;
+  spawnEntities(); curReg = null; refreshHud();
+  const ana = whoOf(npcs[0]);
+  await say(['Oi, seja bem-vindo à <b>Vila Imune</b>! Eu sou a Ana, enfermeira da UBS.', 'Aqui, cada vacina que você toma <b>de verdade</b> abre uma nova área do mundo.'], ana);
+  const ages = [10, 11, 12, 13, 14, 15];
+  const a = await choose('Primeiro: quantos anos você tem?', ages.map(x => x + ' anos'), { who: ana, cancel: false, sel: 2 });
+  S.age = ages[a];
+  const c = await choose('Achei sua caderneta digital! Quer importar as vacinas que você tomou quando era criança?', ['Sim, sincronizar', 'Agora não'], { who: ana, cancel: false });
+  if (c === 0) await syncFlow();
+  S.met.ana = 1;
+  await say([
+    'Cada portão da vila tem uma placa dizendo qual vacina abre aquela área.',
+    'Quando você tomar uma vacina aqui na UBS, eu te mostro um <b>QR code</b> no meu app. Só com ele o portão daquela vacina abre!',
+    'Use o <b>livrinho</b> no canto da tela para ver sua caderneta e o <b>mapa</b> para se localizar. Boa aventura!'], ana);
+  save();
+}
+
+/* ================= INÍCIO ================= */
+resize(); spawnEntities(); requestAnimationFrame(loop);
+const fontsReady = document.fonts && document.fonts.ready ? Promise.race([document.fonts.ready, wait(1500)]) : Promise.resolve();
+fontsReady.then(title);
+document.addEventListener('visibilitychange', () => { if (document.hidden) { held.length = 0; save(); if (AU.ctx) AU.ctx.suspend(); } else if (AU.ctx) AU.ctx.resume(); });
+window.__cv = { S: () => S, P, REGIONS, map, germs: () => germs };
+})();
+</script>
+</body>
+</html>
